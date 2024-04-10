@@ -1,0 +1,11 @@
+[package]
+name = "sql-encrypt"
+description = "Application-level encryption to safely store sensitive data."
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/RigoOnRails/sql-encrypt"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
