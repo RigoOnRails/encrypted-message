@@ -5,11 +5,11 @@ use diesel::{
     sql_types,
 };
 
-use crate::message::EncryptedMessage;
+use crate::{EncryptedMessage, encryption_type::{Deterministic, Randomized}};
 
 macro_rules! impl_from_and_to_sql {
-    ($sql_type:ty, $backend:ty) => {
-        impl FromSql<$sql_type, $backend> for EncryptedMessage {
+    ($sql_type:ty, $backend:ty, $encryption_type:ty) => {
+        impl FromSql<$sql_type, $backend> for EncryptedMessage<$encryption_type> {
             fn from_sql(value: <$backend as Backend>::RawValue<'_>) -> diesel::deserialize::Result<Self> {
                 let json: serde_json::Value = FromSql::<$sql_type, $backend>::from_sql(value)?;
 
@@ -17,7 +17,7 @@ macro_rules! impl_from_and_to_sql {
             }
         }
 
-        impl ToSql<$sql_type, $backend> for EncryptedMessage {
+        impl ToSql<$sql_type, $backend> for EncryptedMessage<$encryption_type> {
             fn to_sql<'b>(&'b self, out: &mut diesel::serialize::Output<'b, '_, $backend>) -> diesel::serialize::Result {
                 let json = serde_json::to_value(self)?;
 
@@ -28,10 +28,20 @@ macro_rules! impl_from_and_to_sql {
 }
 
 #[cfg(all(feature = "diesel", feature = "diesel-mysql"))]
-impl_from_and_to_sql!(sql_types::Json, diesel::mysql::Mysql);
+mod mysql {
+    use super::*;
+
+    impl_from_and_to_sql!(sql_types::Json, diesel::mysql::Mysql, Deterministic);
+    impl_from_and_to_sql!(sql_types::Json, diesel::mysql::Mysql, Randomized);
+}
 
 #[cfg(all(feature = "diesel", feature = "diesel-postgres"))]
-impl_from_and_to_sql!(sql_types::Json, diesel::pg::Pg);
+mod postgres {
+    use super::*;
 
-#[cfg(all(feature = "diesel", feature = "diesel-postgres"))]
-impl_from_and_to_sql!(sql_types::Jsonb, diesel::pg::Pg);
+    impl_from_and_to_sql!(sql_types::Json, diesel::pg::Pg, Deterministic);
+    impl_from_and_to_sql!(sql_types::Json, diesel::pg::Pg, Randomized);
+
+    impl_from_and_to_sql!(sql_types::Jsonb, diesel::pg::Pg, Deterministic);
+    impl_from_and_to_sql!(sql_types::Jsonb, diesel::pg::Pg, Randomized);
+}
