@@ -3,7 +3,7 @@
 [!["Lint & run tests" workflow](https://github.com/RigoOnRails/encrypted-message/actions/workflows/development.yml/badge.svg)](https://github.com/RigoOnRails/encrypted-message/actions/workflows/development.yml)
 
 ## Generate your keys
-You should use 32-byte strings for the primary key, deterministic key, & the key derivation salt.
+You should use 32-byte strings for the `Deterministic` key, `Randomized` key, & the key derivation salt.
 
 Run the following to generate them (you'll need OpenSSL installed):
 ```bash

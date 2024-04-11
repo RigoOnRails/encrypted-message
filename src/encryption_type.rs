@@ -24,6 +24,6 @@ impl EncryptionType for Deterministic {
 pub struct Randomized;
 impl EncryptionType for Randomized {
     fn key() -> [u8; 32] {
-        key_derivation::derive_from(&CONFIG.primary_key)
+        key_derivation::derive_from(&CONFIG.randomized_key)
     }
 }
