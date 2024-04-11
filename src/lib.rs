@@ -1,3 +1,4 @@
+mod config;
 mod integrations;
 
 pub mod encryption_type;
