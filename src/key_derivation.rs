@@ -15,7 +15,7 @@ pub fn derive_from(key: &[u8]) -> [u8; 32] {
 mod tests {
     use super::*;
 
-    use crate::utilities::{base64, testing};
+    use crate::{testing, utilities::base64};
 
     #[test]
     fn test_derive_from() {

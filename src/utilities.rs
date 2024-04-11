@@ -9,10 +9,3 @@ pub mod base64 {
         general_purpose::STANDARD.decode(input)
     }
 }
-
-#[cfg(test)]
-pub mod testing {
-    pub fn setup() {
-        dotenvy::from_filename(".env.test").unwrap();
-    }
-}

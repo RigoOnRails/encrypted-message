@@ -7,6 +7,9 @@ mod integrations;
 mod key_derivation;
 mod utilities;
 
+#[cfg(test)]
+mod testing;
+
 use std::marker::PhantomData;
 
 use serde::{Deserialize, Serialize};
