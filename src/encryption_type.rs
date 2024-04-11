@@ -1,4 +1,11 @@
-pub trait EncryptionType {
+mod private {
+    pub trait Sealed {}
+
+    impl Sealed for super::Deterministic {}
+    impl Sealed for super::Randomized {}
+}
+
+pub trait EncryptionType: private::Sealed {
 }
 
 #[derive(Debug)]
