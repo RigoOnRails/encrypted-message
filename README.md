@@ -5,7 +5,7 @@
 ## Generate your keys
 You should use 32-byte strings for the `Deterministic` key, `Randomized` key, & the key derivation salt.
 
-Run the following to generate them (you'll need OpenSSL installed):
+You can generate them with the following:
 ```bash
 openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | cut -c -32
 ```
