@@ -25,4 +25,4 @@ jobs:
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
 
       - name: Run tests
-        run: cargo nextest run
+        run: cargo nextest run --all-targets --all-features

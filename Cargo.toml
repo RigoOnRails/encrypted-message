@@ -9,5 +9,11 @@ repository = "https://github.com/RigoOnRails/sql-encrypt"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+diesel = { version = "2.1.5", optional = true, features = ["serde_json"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.115"
+
+[features]
+diesel = ["dep:diesel"]
+diesel-mysql = ["diesel/mysql"]
+diesel-postgres = ["diesel/postgres"]
