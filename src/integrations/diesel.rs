@@ -27,7 +27,7 @@ macro_rules! impl_from_and_to_sql {
     };
 }
 
-#[cfg(all(feature = "diesel", feature = "diesel-mysql"))]
+#[cfg(feature = "diesel-mysql")]
 mod mysql {
     use super::*;
 
@@ -35,7 +35,7 @@ mod mysql {
     impl_from_and_to_sql!(sql_types::Json, diesel::mysql::Mysql, Randomized);
 }
 
-#[cfg(all(feature = "diesel", feature = "diesel-postgres"))]
+#[cfg(feature = "diesel-postgres")]
 mod postgres {
     use super::*;
 
