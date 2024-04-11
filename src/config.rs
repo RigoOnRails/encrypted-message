@@ -1,13 +1,13 @@
 use once_cell::sync::Lazy;
 
-struct Config {
-    primary_key: String,
-    deterministic_key: String,
-    key_derivation_salt: String,
-    key_derivation_iterations: u32,
+pub struct Config {
+    pub primary_key: String,
+    pub deterministic_key: String,
+    pub key_derivation_salt: String,
+    pub key_derivation_iterations: u32,
 }
 
-static CONFIG: Lazy<Config> = Lazy::new(|| Config {
+pub static CONFIG: Lazy<Config> = Lazy::new(|| Config {
     primary_key: {
         std::env::var("ENCRYPTION_PRIMARY_KEY")
             .expect("ENCRYPTION_PRIMARY_KEY must be set.")

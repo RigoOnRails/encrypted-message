@@ -1,8 +1,11 @@
 mod config;
-mod integrations;
 
 pub mod encryption_type;
 use encryption_type::EncryptionType;
+
+mod integrations;
+mod key_derivation;
+mod utilities;
 
 use std::marker::PhantomData;
 
