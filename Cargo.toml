@@ -1,10 +1,10 @@
 [package]
-name = "sql-encrypt"
+name = "encrypted-message"
 description = "Application-level encryption to safely store sensitive data."
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/RigoOnRails/sql-encrypt"
+repository = "https://github.com/RigoOnRails/encrypted-message"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

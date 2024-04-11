@@ -53,6 +53,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "encrypted-message"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "form_urlencoded"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -161,15 +170,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "sql-encrypt"
-version = "0.1.0"
-dependencies = [
- "diesel",
- "serde",
- "serde_json",
 ]
 
 [[package]]

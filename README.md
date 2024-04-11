@@ -1,6 +1,6 @@
-# sql-encrypt
-[![crates.io](https://img.shields.io/crates/v/sql-encrypt.svg)](https://crates.io/crates/sql-encrypt)
-[!["Lint & run tests" workflow](https://github.com/RigoOnRails/sql-encrypt/actions/workflows/development.yml/badge.svg)](https://github.com/RigoOnRails/sql-encrypt/actions/workflows/development.yml)
+# encrypted-message
+[![crates.io](https://img.shields.io/crates/v/encrypted-message.svg)](https://crates.io/crates/encrypted-message)
+[!["Lint & run tests" workflow](https://github.com/RigoOnRails/encrypted-message/actions/workflows/development.yml/badge.svg)](https://github.com/RigoOnRails/encrypted-message/actions/workflows/development.yml)
 
 ## Generate your keys
 You should use 32-byte strings for the primary key, deterministic key, & the key derivation salt.
