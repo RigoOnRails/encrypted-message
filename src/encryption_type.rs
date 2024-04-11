@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use rand::Rng as _;
@@ -11,7 +13,7 @@ mod private {
     impl Sealed for super::Randomized {}
 }
 
-pub trait EncryptionType: private::Sealed {
+pub trait EncryptionType: private::Sealed + Debug {
     /// Returns the appropriate key for the encryption type.
     fn key() -> [u8; 32];
 
