@@ -51,7 +51,7 @@ struct EncryptedMessageHeaders {
 }
 
 impl<P: Serialize + Debug, E: EncryptionType> EncryptedMessage<P, E> {
-    /// Creates an [`EncryptedMessage`] from a payload.
+    /// Creates an [`EncryptedMessage`] from a payload, using the AES-256-GCM encryption cipher.
     ///
     /// Fails if the payload cannot be serialized into a JSON string.
     /// See [`serde_json::to_value`] for more information.
