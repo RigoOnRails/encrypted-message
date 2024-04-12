@@ -27,6 +27,11 @@ pub trait EncryptionType: private::Sealed + Debug + PartialEq + Eq {
     }
 }
 
+/// This encryption type is guaranteed to always produce the same nonce for a payload,
+/// which will generate the same encrypted message every time.
+///
+/// This is useful for data you'd like to be able to query, as you can simply encrypt
+/// the payload you're querying for & search for the same encrypted message.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Deterministic;
 impl EncryptionType for Deterministic {
@@ -42,6 +47,11 @@ impl EncryptionType for Deterministic {
     }
 }
 
+/// This encryption type is guaranteed to always produce a random nonce, regardless of the payload,
+/// which will generate a different encrypted message every time.
+///
+/// This encryption type improves security by making crypto-analysis of encrypted messages harder,
+/// but makes querying them impossible.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Randomized;
 impl EncryptionType for Randomized {
