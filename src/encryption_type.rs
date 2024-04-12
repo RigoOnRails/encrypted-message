@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use secrecy::{Secret, ExposeSecret as _};
+use secrecy::{SecretVec, Secret, ExposeSecret as _};
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use rand::Rng as _;
@@ -15,18 +15,23 @@ mod private {
 }
 
 pub trait EncryptionType: private::Sealed + Debug {
-    /// Returns the appropriate key for the encryption type.
-    fn key() -> Secret<[u8; 32]>;
+    /// Returns the raw keys for the encryption type.
+    fn raw_keys() -> Vec<SecretVec<u8>>;
 
     /// Generates a 96-bit nonce to encrypt a payload.
     fn generate_nonce_for(payload: &[u8]) -> [u8; 12];
+
+    /// Returns the primary key, derived, for the encryption type.
+    fn key() -> Secret<[u8; 32]> {
+        key_derivation::derive_from(Self::raw_keys().remove(0).expose_secret())
+    }
 }
 
 #[derive(Debug)]
 pub struct Deterministic;
 impl EncryptionType for Deterministic {
-    fn key() -> Secret<[u8; 32]> {
-        key_derivation::derive_from(config::deterministic_key().expose_secret())
+    fn raw_keys() -> Vec<SecretVec<u8>> {
+        config::deterministic_keys()
     }
 
     fn generate_nonce_for(payload: &[u8]) -> [u8; 12] {
@@ -40,8 +45,8 @@ impl EncryptionType for Deterministic {
 #[derive(Debug)]
 pub struct Randomized;
 impl EncryptionType for Randomized {
-    fn key() -> Secret<[u8; 32]> {
-        key_derivation::derive_from(config::randomized_key().expose_secret())
+    fn raw_keys() -> Vec<SecretVec<u8>> {
+        config::randomized_keys()
     }
 
     fn generate_nonce_for(_payload: &[u8]) -> [u8; 12] {
