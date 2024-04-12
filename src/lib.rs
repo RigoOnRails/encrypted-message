@@ -27,25 +27,31 @@ use secrecy::ExposeSecret as _;
 #[cfg_attr(all(feature = "diesel", feature = "diesel-postgres"), diesel(sql_type = diesel::sql_types::Jsonb))]
 pub struct EncryptedMessage<P: Serialize + Debug, E: EncryptionType> {
     /// The base64-encoded & encrypted payload.
-    p: String,
+    #[serde(rename = "p")]
+    payload: String,
 
     /// The headers stored with the encrypted payload.
-    h: EncryptedMessageHeaders,
+    #[serde(rename = "h")]
+    headers: EncryptedMessageHeaders,
 
     /// The payload type.
-    _payload_type: PhantomData<P>,
+    #[serde(skip)]
+    payload_type: PhantomData<P>,
 
     /// The encryption type used to encrypt the payload.
-    _encryption_type: PhantomData<E>,
+    #[serde(skip)]
+    encryption_type: PhantomData<E>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 struct EncryptedMessageHeaders {
     /// The base64-encoded nonce used to encrypt the payload.
-    iv: String,
+    #[serde(rename = "iv")]
+    nonce: String,
 
     /// The base64-encoded auth tag used to verify the encrypted payload.
-    at: String,
+    #[serde(rename = "at")]
+    tag: String,
 }
 
 impl<P: Serialize + Debug, E: EncryptionType> EncryptedMessage<P, E> {
@@ -64,13 +70,13 @@ impl<P: Serialize + Debug, E: EncryptionType> EncryptedMessage<P, E> {
         let tag = cipher.encrypt_in_place_detached(&nonce.into(), b"", &mut buffer).unwrap();
 
         Ok(EncryptedMessage {
-            p: base64::encode(buffer),
-            h: EncryptedMessageHeaders {
-                iv: base64::encode(nonce),
-                at: base64::encode(tag),
+            payload: base64::encode(buffer),
+            headers: EncryptedMessageHeaders {
+                nonce: base64::encode(nonce),
+                tag: base64::encode(tag),
             },
-            _payload_type: PhantomData,
-            _encryption_type: PhantomData,
+            payload_type: PhantomData,
+            encryption_type: PhantomData,
         })
     }
 }
@@ -93,13 +99,13 @@ mod tests {
             assert_eq!(
                 EncryptedMessage::<&str, Deterministic>::encrypt("rigo does pretty codes").unwrap(),
                 EncryptedMessage {
-                    p: "SBwByX5cxBSMgPlixDEf0pYEa6W41TIA".to_string(),
-                    h: EncryptedMessageHeaders {
-                        iv: "xg172uWMpjJqmWro".to_string(),
-                        at: "S88wdO9tf/381mZQ88kMNw==".to_string(),
+                    payload: "SBwByX5cxBSMgPlixDEf0pYEa6W41TIA".to_string(),
+                    headers: EncryptedMessageHeaders {
+                        nonce: "xg172uWMpjJqmWro".to_string(),
+                        tag: "S88wdO9tf/381mZQ88kMNw==".to_string(),
                     },
-                    _payload_type: PhantomData,
-                    _encryption_type: PhantomData,
+                    payload_type: PhantomData,
+                    encryption_type: PhantomData,
                 },
             );
         }
@@ -122,5 +128,39 @@ mod tests {
                 EncryptedMessage::<&str, Randomized>::encrypt(payload).unwrap(),
             );
         }
+    }
+
+    #[test]
+    fn to_and_from_json() {
+        testing::setup();
+
+        let message = EncryptedMessage {
+            payload: "SBwByX5cxBSMgPlixDEf0pYEa6W41TIA".to_string(),
+            headers: EncryptedMessageHeaders {
+                nonce: "xg172uWMpjJqmWro".to_string(),
+                tag: "S88wdO9tf/381mZQ88kMNw==".to_string(),
+            },
+            payload_type: PhantomData::<&str>,
+            encryption_type: PhantomData::<encryption_type::Deterministic>,
+        };
+
+        // To JSON.
+        let message_json = serde_json::to_value(&message).unwrap();
+        assert_eq!(
+            message_json,
+            serde_json::json!({
+                "p": "SBwByX5cxBSMgPlixDEf0pYEa6W41TIA",
+                "h": {
+                    "iv": "xg172uWMpjJqmWro",
+                    "at": "S88wdO9tf/381mZQ88kMNw==",
+                },
+            }),
+        );
+
+        // From JSON.
+        assert_eq!(
+            serde_json::from_value::<EncryptedMessage::<_, _>>(message_json).unwrap(),
+            message,
+        );
     }
 }
