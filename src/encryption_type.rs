@@ -14,7 +14,7 @@ mod private {
     impl Sealed for super::Randomized {}
 }
 
-pub trait EncryptionType: private::Sealed + Debug {
+pub trait EncryptionType: private::Sealed + Debug + PartialEq + Eq {
     /// Returns the raw keys for the encryption type.
     fn raw_keys() -> Vec<SecretVec<u8>>;
 
@@ -27,7 +27,7 @@ pub trait EncryptionType: private::Sealed + Debug {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Deterministic;
 impl EncryptionType for Deterministic {
     fn raw_keys() -> Vec<SecretVec<u8>> {
@@ -42,7 +42,7 @@ impl EncryptionType for Deterministic {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Randomized;
 impl EncryptionType for Randomized {
     fn raw_keys() -> Vec<SecretVec<u8>> {
