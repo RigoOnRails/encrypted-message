@@ -1,13 +1,21 @@
-use secrecy::{Secret, ExposeSecret as _};
+use secrecy::{Secret, SecretVec, ExposeSecret as _};
 use pbkdf2::pbkdf2_hmac_array;
 use sha2::Sha256;
 
-use crate::config;
-
 /// Derives a new 256-bit key from an existing key using the key derivation salt.
 pub fn derive_from(key: &[u8]) -> Secret<[u8; 32]> {
-    let salt = config::key_derivation_salt();
-    let iterations = config::key_derivation_iterations();
+    let salt: SecretVec<u8> = {
+        std::env::var("ENCRYPTED_MESSAGE_KEY_DERIVATION_SALT")
+            .expect("ENCRYPTED_MESSAGE_KEY_DERIVATION_SALT must be set.")
+            .into_bytes()
+            .into()
+    };
+
+    let iterations = {
+        std::env::var("ENCRYPTED_MESSAGE_KEY_DERIVATION_ITERATIONS").map(|iterations| {
+            iterations.parse().expect("ENCRYPTED_MESSAGE_KEY_DERIVATION_ITERATIONS must be an integer.")
+        }).unwrap_or(2_u32.pow(16))
+    };
 
     pbkdf2_hmac_array::<Sha256, 32>(key, salt.expose_secret(), iterations).into()
 }

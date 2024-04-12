@@ -1,5 +1,3 @@
-mod config;
-
 pub mod encryption_type;
 use encryption_type::EncryptionType;
 

@@ -5,7 +5,7 @@ use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use rand::Rng as _;
 
-use crate::{key_derivation, config};
+use crate::key_derivation;
 
 mod private {
     pub trait Sealed {}
@@ -15,11 +15,23 @@ mod private {
 }
 
 pub trait EncryptionType: private::Sealed + Debug + PartialEq + Eq {
-    /// Returns the raw keys for the encryption type.
-    fn raw_keys() -> Vec<SecretVec<u8>>;
+    /// The environment variable that contains the keys for the encryption type.
+    const KEYS_ENV_VAR: &'static str;
 
     /// Generates a 96-bit nonce to encrypt a payload.
     fn generate_nonce_for(payload: &[u8]) -> [u8; 12];
+
+    /// Returns the raw keys for the encryption type.
+    fn raw_keys() -> Vec<SecretVec<u8>> {
+        let keys: Vec<_> = std::env::var(Self::KEYS_ENV_VAR)
+            .unwrap_or_else(|_| panic!("{} must be set.", Self::KEYS_ENV_VAR))
+            .split(',')
+            .map(|key| key.to_owned().into_bytes().into())
+            .collect();
+
+        assert!(!keys.is_empty(), "{} must have a key present.", Self::KEYS_ENV_VAR);
+        keys
+    }
 
     /// Returns the primary key, derived, for the encryption type.
     fn key() -> Secret<[u8; 32]> {
@@ -35,10 +47,9 @@ pub trait EncryptionType: private::Sealed + Debug + PartialEq + Eq {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Deterministic;
 impl EncryptionType for Deterministic {
-    fn raw_keys() -> Vec<SecretVec<u8>> {
-        config::deterministic_keys()
-    }
+    const KEYS_ENV_VAR: &'static str = "ENCRYPTED_MESSAGE_DETERMINISTIC_KEYS";
 
+    /// Generates a deterministic 96-bit nonce for the payload.
     fn generate_nonce_for(payload: &[u8]) -> [u8; 12] {
         let mut mac = Hmac::<Sha256>::new_from_slice(Self::key().expose_secret()).unwrap();
         mac.update(payload);
@@ -55,10 +66,9 @@ impl EncryptionType for Deterministic {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Randomized;
 impl EncryptionType for Randomized {
-    fn raw_keys() -> Vec<SecretVec<u8>> {
-        config::randomized_keys()
-    }
+    const KEYS_ENV_VAR: &'static str = "ENCRYPTED_MESSAGE_RANDOMIZED_KEYS";
 
+    /// Generates a random 96-bit nonce for the payload.
     fn generate_nonce_for(_payload: &[u8]) -> [u8; 12] {
         let mut buffer = [0; 12];
         rand::thread_rng().fill(&mut buffer);
@@ -77,6 +87,28 @@ mod tests {
         use super::*;
 
         #[test]
+        fn returns_correct_raw_keys() {
+            testing::setup();
+
+            let keys = Deterministic::raw_keys()
+                .into_iter()
+                .map(|k| String::from_utf8(k.expose_secret().clone()).unwrap())
+                .collect::<Vec<_>>();
+
+            assert_eq!(keys, vec!["uuOxfpWgRgIEo3dIrdo0hnHJHF1hntvW", "tiwQCWKCsW1d6qzZfp7HYvnRqZPYYhMt"]);
+        }
+
+        #[test]
+        fn returns_correct_derived_key() {
+            testing::setup();
+
+            assert_eq!(
+                *Deterministic::key().expose_secret(),
+                *base64::decode("Zhw8+76eCgBrUQPFlbz1ajnWZII+6uF/6h0a3d3IU2s=").unwrap(),
+            );
+        }
+
+        #[test]
         fn nonce_is_deterministic() {
             testing::setup();
 
@@ -92,6 +124,28 @@ mod tests {
 
     mod randomized {
         use super::*;
+
+        #[test]
+        fn returns_correct_raw_keys() {
+            testing::setup();
+
+            let keys = Randomized::raw_keys()
+                .into_iter()
+                .map(|k| String::from_utf8(k.expose_secret().clone()).unwrap())
+                .collect::<Vec<_>>();
+
+            assert_eq!(keys, vec!["VDIVbMzI30DL0YBgxS4i360Ox22mixRA", "JHedIoHEwoJuyvqwTMacEGJ6Scsh6ltK"]);
+        }
+
+        #[test]
+        fn returns_correct_derived_key() {
+            testing::setup();
+
+            assert_eq!(
+                *Randomized::key().expose_secret(),
+                *base64::decode("UzHAn57j9PblBH6uBQRh+4E0dOnhZvam5erBQEFY1TU=").unwrap(),
+            );
+        }
 
         #[test]
         fn nonce_is_randomized() {
