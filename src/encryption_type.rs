@@ -11,7 +11,7 @@ mod private {
     impl Sealed for super::Randomized {}
 }
 
-pub trait EncryptionType: private::Sealed + Debug + PartialEq + Eq {
+pub trait EncryptionType: private::Sealed + Debug {
     /// Generates a 96-bit nonce to encrypt a payload.
     fn generate_nonce_for(payload: &[u8], key: &[u8]) -> [u8; 12];
 }
