@@ -90,9 +90,7 @@ impl<P: DeserializeOwned + Serialize + Debug, E: EncryptionType> EncryptedMessag
     /// ## Errors
     ///
     /// - Returns a [`DecryptionError::Base64Decoding`] error if the base64-decoding of the payload, nonce, or tag fails.
-    ///
     /// - Returns a [`DecryptionError::Decryption`] error if the payload cannot be decrypted with any of the available keys.
-    ///
     /// - Returns a [`DecryptionError::Deserialization`] error if the payload cannot be deserialized into the expected type.
     ///   See [`serde_json::from_slice`] for more information.
     pub fn decrypt(&self) -> Result<P, DecryptionError> {
@@ -113,6 +111,14 @@ impl<P: DeserializeOwned + Serialize + Debug, E: EncryptionType> EncryptedMessag
         }
 
         Err(DecryptionError::Decryption)
+    }
+
+    /// Consumes the [`EncryptedMessage`] & returns a new one with
+    /// the same encryption type, but with a new encrypted payload.
+    ///
+    /// See [`Self::encrypt`] for more information.
+    pub fn with_new_payload(self, payload: P) -> Result<Self, EncryptionError> {
+        Self::encrypt(payload)
     }
 }
 
@@ -247,6 +253,21 @@ mod tests {
 
             assert!(matches!(message.decrypt().unwrap_err(), DecryptionError::Deserialization(_)));
         }
+    }
+
+    #[test]
+    fn test_with_new_payload() {
+        testing::setup();
+
+        let message = EncryptedMessage::<String, Deterministic>::encrypt("bonjour".to_string()).unwrap();
+        let encrypted_payload = message.payload.clone();
+
+        let new_message = message.with_new_payload("hola".to_string()).unwrap();
+        let new_encrypted_payload = new_message.payload;
+
+        assert_eq!(new_message.payload_type, PhantomData::<String>);
+        assert_eq!(new_message.encryption_type, PhantomData::<Deterministic>);
+        assert_ne!(encrypted_payload, new_encrypted_payload);
     }
 
     #[test]
