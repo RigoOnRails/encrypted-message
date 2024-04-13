@@ -1,5 +1,5 @@
-mod config;
-use config::Config;
+pub mod config;
+pub use config::Config;
 
 pub mod encryption_type;
 use encryption_type::EncryptionType;
