@@ -1,6 +1,9 @@
 pub mod encryption_type;
 use encryption_type::EncryptionType;
 
+mod error;
+use error::EncryptionError;
+
 mod integrations;
 mod key_derivation;
 
@@ -57,9 +60,11 @@ struct EncryptedMessageHeaders {
 impl<P: Serialize + Debug, E: EncryptionType> EncryptedMessage<P, E> {
     /// Creates an [`EncryptedMessage`] from a payload, using the AES-256-GCM encryption cipher.
     ///
-    /// Fails if the payload cannot be serialized into a JSON string.
+    /// ## Errors
+    ///
+    /// - Returns an [`EncryptionError::Serialization`] error if the payload cannot be serialized into a JSON string.
     /// See [`serde_json::to_value`] for more information.
-    pub fn encrypt(payload: P) -> Result<Self, serde_json::Error> {
+    pub fn encrypt(payload: P) -> Result<Self, EncryptionError> {
         // Serialize the payload into a JSON string, then convert it into a byte array.
         let payload = serde_json::to_value(payload)?.to_string().into_bytes();
 
