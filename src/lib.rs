@@ -4,8 +4,8 @@ use config::Config;
 pub mod encryption_type;
 use encryption_type::EncryptionType;
 
-mod error;
-use error::{EncryptionError, DecryptionError};
+pub mod error;
+pub use error::{EncryptionError, DecryptionError};
 
 mod integrations;
 mod key_generator;
