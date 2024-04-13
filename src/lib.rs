@@ -22,11 +22,9 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use aes_gcm::{KeyInit as _, Aes256Gcm, AeadInPlace as _};
 use secrecy::ExposeSecret as _;
 
-/// An encrypted message.
-///
 /// Used to safely handle & transport encrypted data within your application.
-/// It contains the encrypted payload of the message, along with a nonce & tag
-/// that are used in the encryption & decryption processes.
+/// It contains an encrypted payload, along with a nonce & tag that are
+/// used in the encryption & decryption processes.
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[cfg_attr(feature = "diesel", derive(diesel::AsExpression))]
 #[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Json))]
@@ -67,7 +65,7 @@ struct EncryptedMessageHeaders {
 impl<P: DeserializeOwned + Serialize + Debug, E: EncryptionType, C: Config> EncryptedMessage<P, E, C> {
     /// Creates an [`EncryptedMessage`] from a payload, using the AES-256-GCM encryption cipher.
     ///
-    /// ## Errors
+    /// # Errors
     ///
     /// - Returns an [`EncryptionError::Serialization`] error if the payload cannot be serialized into a JSON string.
     ///   See [`serde_json::to_value`] for more information.
@@ -96,7 +94,7 @@ impl<P: DeserializeOwned + Serialize + Debug, E: EncryptionType, C: Config> Encr
 
     /// Decrypts the payload of the [`EncryptedMessage`], trying all available keys in order until it finds one that works.
     ///
-    /// ## Errors
+    /// # Errors
     ///
     /// - Returns a [`DecryptionError::Base64Decoding`] error if the base64-decoding of the payload, nonce, or tag fails.
     /// - Returns a [`DecryptionError::Decryption`] error if the payload cannot be decrypted with any of the available keys.
