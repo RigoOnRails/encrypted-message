@@ -3,7 +3,7 @@ use std::fmt::Debug;
 pub use secrecy;
 use secrecy::{SecretVec, Secret, ExposeSecret as _};
 
-use crate::key_generator;
+use crate::key_generation;
 
 /// A trait to define the configuration for the encryption/decryption process
 /// of an [`EncryptedMessage`](crate::EncryptedMessage).
@@ -33,7 +33,7 @@ pub trait Config: Debug {
         let keys = Self::raw_keys();
         assert!(!keys.is_empty(), "Must provide at least one key.");
 
-        key_generator::derive_from(
+        key_generation::derive_from(
             keys[0].expose_secret(),
             Self::key_derivation_salt().expose_secret(),
             Self::KEY_DERIVATION_ITERATIONS,
