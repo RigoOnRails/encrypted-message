@@ -26,8 +26,5 @@ diesel = ["dep:diesel"]
 diesel-mysql = ["diesel/mysql"]
 diesel-postgres = ["diesel/postgres"]
 
-[dev-dependencies]
-dotenvy = "0.15.7"
-
 [profile.dev.package.sha2]
 opt-level = 1
