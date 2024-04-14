@@ -26,7 +26,7 @@ use secrecy::ExposeSecret as _;
 /// It contains an encrypted payload, along with a nonce & tag that are
 /// used in the encryption & decryption processes.
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
-#[cfg_attr(feature = "diesel", derive(diesel::AsExpression))]
+#[cfg_attr(feature = "diesel", derive(diesel::AsExpression, diesel::FromSqlRow))]
 #[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Json))]
 #[cfg_attr(all(feature = "diesel", feature = "diesel-postgres"), diesel(sql_type = diesel::sql_types::Jsonb))]
 pub struct EncryptedMessage<P: DeserializeOwned + Serialize + Debug, E: EncryptionType, C: Config> {
