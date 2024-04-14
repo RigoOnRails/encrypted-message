@@ -29,7 +29,7 @@ use secrecy::ExposeSecret as _;
 #[cfg_attr(feature = "diesel", derive(diesel::AsExpression, diesel::FromSqlRow))]
 #[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Json))]
 #[cfg_attr(all(feature = "diesel", feature = "diesel-postgres"), diesel(sql_type = diesel::sql_types::Jsonb))]
-pub struct EncryptedMessage<P: DeserializeOwned + Serialize + Debug, E: EncryptionType, C: Config> {
+pub struct EncryptedMessage<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, C: Config> {
     /// The base64-encoded & encrypted payload.
     #[serde(rename = "p")]
     payload: String,
@@ -62,7 +62,7 @@ struct EncryptedMessageHeaders {
     tag: String,
 }
 
-impl<P: DeserializeOwned + Serialize + Debug, E: EncryptionType, C: Config> EncryptedMessage<P, E, C> {
+impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, C: Config> EncryptedMessage<P, E, C> {
     /// Creates an [`EncryptedMessage`] from a payload, using the AES-256-GCM encryption cipher.
     ///
     /// # Errors
