@@ -1,8 +1,8 @@
-use crate::config::{Config, secrecy::SecretVec};
+use crate::key_config::{KeyConfig, secrecy::SecretVec};
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct DeterministicConfig;
-impl Config for DeterministicConfig {
+pub struct DeterministicKeyConfig;
+impl KeyConfig for DeterministicKeyConfig {
     fn raw_keys() -> Vec<SecretVec<u8>> {
         vec![
             b"uuOxfpWgRgIEo3dIrdo0hnHJHF1hntvW".to_vec().into(),
@@ -16,8 +16,8 @@ impl Config for DeterministicConfig {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct RandomizedConfig;
-impl Config for RandomizedConfig {
+pub struct RandomizedKeyConfig;
+impl KeyConfig for RandomizedKeyConfig {
     fn raw_keys() -> Vec<SecretVec<u8>> {
         vec![
             b"VDIVbMzI30DL0YBgxS4i360Ox22mixRA".to_vec().into(),

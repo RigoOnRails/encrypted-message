@@ -56,14 +56,14 @@ mod tests {
 
     use secrecy::ExposeSecret as _;
 
-    use crate::{Config, utilities::base64, testing};
+    use crate::{KeyConfig, utilities::base64, testing};
 
     mod deterministic {
         use super::*;
 
         #[test]
         fn nonce_is_deterministic() {
-            let key = testing::DeterministicConfig::key();
+            let key = testing::DeterministicKeyConfig::key();
             let nonce = Deterministic::generate_nonce_for("rigo is cool".as_bytes(), key.expose_secret());
 
             // Test that the nonce is 12 bytes long.
@@ -80,7 +80,7 @@ mod tests {
         #[test]
         fn nonce_is_randomized() {
             let payload = "much secret much secure".as_bytes();
-            let key = testing::RandomizedConfig::key();
+            let key = testing::RandomizedKeyConfig::key();
             let first_nonce = Randomized::generate_nonce_for(payload, key.expose_secret());
             let second_nonce = Randomized::generate_nonce_for(payload, key.expose_secret());
 

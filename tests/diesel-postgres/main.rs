@@ -5,31 +5,31 @@ mod schema;
 use diesel::prelude::*;
 use encrypted_message::{encryption_type::{Randomized, Deterministic}, EncryptedMessage};
 
-include!("../common/config.rs");
+include!("../common/key_config.rs");
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 struct User {
     id: i32,
-    json: Option<EncryptedMessage<String, Randomized, Config>>,
-    jsonb: Option<EncryptedMessage<String, Deterministic, Config>>,
+    json: Option<EncryptedMessage<String, Randomized, KeyConfig>>,
+    jsonb: Option<EncryptedMessage<String, Deterministic, KeyConfig>>,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 struct UserInsertable {
-    json: Option<EncryptedMessage<String, Randomized, Config>>,
-    jsonb: Option<EncryptedMessage<String, Deterministic, Config>>,
+    json: Option<EncryptedMessage<String, Randomized, KeyConfig>>,
+    jsonb: Option<EncryptedMessage<String, Deterministic, KeyConfig>>,
 }
 
 #[derive(AsChangeset)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 struct UserChangeset {
-    json: Option<Option<EncryptedMessage<String, Randomized, Config>>>,
-    jsonb: Option<Option<EncryptedMessage<String, Deterministic, Config>>>,
+    json: Option<Option<EncryptedMessage<String, Randomized, KeyConfig>>>,
+    jsonb: Option<Option<EncryptedMessage<String, Deterministic, KeyConfig>>>,
 }
 
 #[test]

@@ -1,6 +1,6 @@
 #[derive(Debug)]
-struct Config;
-impl encrypted_message::Config for Config {
+struct KeyConfig;
+impl encrypted_message::KeyConfig for KeyConfig {
     fn raw_keys() -> Vec<secrecy::SecretVec<u8>> {
         vec![b"Fl1cANaYYRKWjmZPMDG2a3lhMnulSBqx".to_vec().into()]
     }

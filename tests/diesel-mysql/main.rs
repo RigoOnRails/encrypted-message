@@ -5,7 +5,7 @@ mod schema;
 use diesel::prelude::*;
 use encrypted_message::{encryption_type::Randomized, EncryptedMessage};
 
-include!("../common/config.rs");
+include!("../common/key_config.rs");
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name = schema::users)]
@@ -13,7 +13,7 @@ include!("../common/config.rs");
 struct User {
     #[allow(dead_code)]
     id: String,
-    json: Option<EncryptedMessage<String, Randomized, Config>>,
+    json: Option<EncryptedMessage<String, Randomized, KeyConfig>>,
 }
 
 #[derive(Insertable)]
@@ -21,14 +21,14 @@ struct User {
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
 struct UserInsertable {
     id: String,
-    json: Option<EncryptedMessage<String, Randomized, Config>>,
+    json: Option<EncryptedMessage<String, Randomized, KeyConfig>>,
 }
 
 #[derive(AsChangeset)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
 struct UserChangeset {
-    json: Option<Option<EncryptedMessage<String, Randomized, Config>>>,
+    json: Option<Option<EncryptedMessage<String, Randomized, KeyConfig>>>,
 }
 
 #[test]
