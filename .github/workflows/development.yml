@@ -15,6 +15,15 @@ jobs:
         run: cargo clippy --all-targets --all-features
   test:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+    env:
+      MYSQL_DATABASE_URL: mysql://root:root@127.0.0.1/test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,6 +32,13 @@ jobs:
 
       - name: Install nextest
         run: curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+
+      - name: Install Diesel CLI
+        run: cargo install diesel_cli
+
+      - name: Set up diesel-mysql integration test
+        working-directory: tests/diesel-mysql
+        run: diesel setup --database-url ${{ env.MYSQL_DATABASE_URL }}
 
       - name: Run tests
         run: cargo nextest run --all-targets --all-features
