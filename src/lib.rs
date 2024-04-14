@@ -300,34 +300,34 @@ mod tests {
 
     #[test]
     fn handles_json_types() {
-        // nullable values
+        // Nullable values
         let encrypted = EncryptedMessage::<Option<String>, Randomized, RandomizedConfig>::encrypt(None).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), None);
 
         let encrypted = EncryptedMessage::<Option<String>, Randomized, RandomizedConfig>::encrypt(Some("rigo is cool".to_string())).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), Some("rigo is cool".to_string()));
 
-        // boolean values
+        // Boolean values
         let encrypted = EncryptedMessage::<bool, Randomized, RandomizedConfig>::encrypt(true).unwrap();
         assert_eq!(encrypted.decrypt().unwrap() as u8, 1);
 
-        // integer values
+        // Integer values
         let encrypted = EncryptedMessage::<u8, Randomized, RandomizedConfig>::encrypt(255).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), 255);
 
-        // float values
+        // Float values
         let encrypted = EncryptedMessage::<f64, Randomized, RandomizedConfig>::encrypt(0.12345).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), 0.12345);
 
-        // string values
+        // String values
         let encrypted = EncryptedMessage::<String, Randomized, RandomizedConfig>::encrypt("rigo is cool".to_string()).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), "rigo is cool");
 
-        // array values
+        // Array values
         let encrypted = EncryptedMessage::<Vec<u8>, Randomized, RandomizedConfig>::encrypt(vec![1, 2, 3]).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), vec![1, 2, 3]);
 
-        // object values
+        // Object values
         let encrypted = EncryptedMessage::<serde_json::Value, Randomized, RandomizedConfig>::encrypt(json!({ "a": 1, "b": "hello", "c": false })).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), json!({ "a": 1, "b": "hello", "c": false }));
     }
