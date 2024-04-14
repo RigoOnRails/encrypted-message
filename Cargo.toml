@@ -28,3 +28,7 @@ diesel-postgres = ["diesel/postgres"]
 
 [profile.dev.package.sha2]
 opt-level = 1
+
+[dev-dependencies]
+dotenvy = "0.15.7"
+uuid = { version = "1.8.0", features = ["v4"] }
