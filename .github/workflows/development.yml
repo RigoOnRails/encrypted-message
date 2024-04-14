@@ -22,8 +22,16 @@ jobs:
           - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: root
+      postgres:
+        image: postgres:16-alpine
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
     env:
       MYSQL_DATABASE_URL: mysql://root:root@127.0.0.1/test
+      POSTGRES_DATABASE_URL: postgres://root:root@127.0.0.1/test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -39,6 +47,10 @@ jobs:
       - name: Set up diesel-mysql integration test
         working-directory: tests/diesel-mysql
         run: diesel setup --database-url ${{ env.MYSQL_DATABASE_URL }}
+
+      - name: Set up diesel-postgres integration test
+        working-directory: tests/diesel-postgres
+        run: diesel setup --database-url ${{ env.POSTGRES_DATABASE_URL }}
 
       - name: Run tests
         run: cargo nextest run --all-targets --all-features
