@@ -286,6 +286,8 @@ mod tests {
         assert_eq!(message.decrypt().unwrap(), expected_payload);
 
         // Ensure that if encrypting the same value, it'll be different since it'll use the new primary key.
+        // Note that we're using the `Deterministic` encryption type, so the encrypted message would be the
+        // same if the key was the same.
         assert_ne!(
             EncryptedMessage::<String, Deterministic, DeterministicConfig>::encrypt(expected_payload).unwrap(),
             message,
