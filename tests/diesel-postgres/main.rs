@@ -5,7 +5,7 @@ mod schema;
 use diesel::prelude::*;
 use encrypted_message::{encryption_type::{Randomized, Deterministic}, EncryptedMessage};
 
-include!("../common/mod.rs");
+include!("../common/config.rs");
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name = schema::users)]
