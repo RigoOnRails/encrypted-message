@@ -14,12 +14,12 @@ mod tests {
 
     use secrecy::ExposeSecret as _;
 
-    use crate::{KeyConfig, testing::DeterministicKeyConfig, utilities::base64};
+    use crate::{KeyConfig, testing::TestKeyConfig, utilities::base64};
 
     #[test]
     fn test_derive_from() {
-        let salt = DeterministicKeyConfig::key_derivation_salt();
-        let iterations = DeterministicKeyConfig::KEY_DERIVATION_ITERATIONS;
+        let salt = TestKeyConfig::key_derivation_salt();
+        let iterations = TestKeyConfig::KEY_DERIVATION_ITERATIONS;
 
         assert_eq!(
             *derive_from(b"Be1Px0bQu6SzkQubyuBusMJRC7GXO0vn", salt.expose_secret(), iterations).expose_secret(),
