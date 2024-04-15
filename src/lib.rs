@@ -125,7 +125,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
     /// Consumes the [`EncryptedMessage`] & returns a new one with
     /// the same encryption type, but with a new encrypted payload.
     ///
-    /// See [`Self::encrypt`] for more information.
+    /// See [`Self::encrypt_with_key_config`] for more information.
     pub fn with_new_payload_and_key_config(self, payload: P, key_config: K) -> Result<Self, EncryptionError> {
         Self::encrypt_with_key_config(payload, key_config)
     }
