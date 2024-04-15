@@ -8,7 +8,6 @@ pub mod error;
 pub use error::{EncryptionError, DecryptionError};
 
 mod integrations;
-mod key_generation;
 
 mod utilities;
 use utilities::base64;
@@ -106,9 +105,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
         let tag = base64::decode(&self.headers.tag)?;
 
         for raw_key in key_config.raw_keys() {
-            let salt = key_config.key_derivation_salt();
-            let iterations = K::KEY_DERIVATION_ITERATIONS;
-            let key = key_generation::derive_from(raw_key.expose_secret(), salt.expose_secret(), iterations);
+            let key = key_config.derive_key(raw_key.expose_secret());
             let cipher = Aes256Gcm::new_from_slice(key.expose_secret()).unwrap();
 
             let mut buffer = payload.clone();
