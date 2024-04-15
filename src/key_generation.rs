@@ -18,7 +18,7 @@ mod tests {
 
     #[test]
     fn test_derive_from() {
-        let salt = TestKeyConfig::key_derivation_salt();
+        let salt = TestKeyConfig.key_derivation_salt();
         let iterations = TestKeyConfig::KEY_DERIVATION_ITERATIONS;
 
         assert_eq!(
