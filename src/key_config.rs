@@ -14,7 +14,7 @@ use crate::key_generation;
 /// We recommend one implementation for [`Deterministic`](crate::encryption_type::Deterministic)
 /// & one for [`Randomized`](crate::encryption_type::Randomized) with different keys but
 /// the same salt & iterations.
-pub trait KeyConfig: Debug + Default {
+pub trait KeyConfig: Debug {
     /// The number of iterations to use when deriving keys.
     const KEY_DERIVATION_ITERATIONS: u32 = 2_u32.pow(16);
 

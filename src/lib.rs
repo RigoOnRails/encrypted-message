@@ -92,12 +92,6 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
         })
     }
 
-    /// This method is a shorthand for [`Self::encrypt_with_key_config`],
-    /// passing `K::default()` as the key configuration.
-    pub fn encrypt(payload: P) -> Result<Self, EncryptionError> {
-        Self::encrypt_with_key_config(payload, K::default())
-    }
-
     /// Decrypts the payload of the [`EncryptedMessage`], trying all available keys in order until it finds one that works.
     ///
     /// # Errors
@@ -128,18 +122,26 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
         Err(DecryptionError::Decryption)
     }
 
-    /// This method is a shorthand for [`Self::decrypt_with_key_config`],
-    /// passing `K::default()` as the key configuration.
-    pub fn decrypt(&self) -> Result<P, DecryptionError> {
-        self.decrypt_with_key_config(K::default())
-    }
-
     /// Consumes the [`EncryptedMessage`] & returns a new one with
     /// the same encryption type, but with a new encrypted payload.
     ///
     /// See [`Self::encrypt`] for more information.
     pub fn with_new_payload_and_key_config(self, payload: P, key_config: K) -> Result<Self, EncryptionError> {
         Self::encrypt_with_key_config(payload, key_config)
+    }
+}
+
+impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig + Default> EncryptedMessage<P, E, K> {
+    /// This method is a shorthand for [`Self::encrypt_with_key_config`],
+    /// passing `K::default()` as the key configuration.
+    pub fn encrypt(payload: P) -> Result<Self, EncryptionError> {
+        Self::encrypt_with_key_config(payload, K::default())
+    }
+
+    /// This method is a shorthand for [`Self::decrypt_with_key_config`],
+    /// passing `K::default()` as the key configuration.
+    pub fn decrypt(&self) -> Result<P, DecryptionError> {
+        self.decrypt_with_key_config(K::default())
     }
 
     /// This method is a shorthand for [`Self::with_new_payload_and_key_config`],

@@ -3,24 +3,24 @@
 
 use encrypted_message::{EncryptedMessage, encryption_type::Randomized};
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 struct KeyConfig {
-    user_id: Option<String>,
+    user_id: String,
 }
 
 impl encrypted_message::KeyConfig for KeyConfig {
     fn raw_keys(&self) -> Vec<secrecy::SecretVec<u8>> {
-        vec![format!("{}-key", self.user_id.as_ref().unwrap()).into_bytes().into()]
+        vec![format!("{}-key", self.user_id).into_bytes().into()]
     }
 
     fn key_derivation_salt(&self) -> secrecy::SecretVec<u8> {
-        format!("{}-key-derivation-salt", self.user_id.as_ref().unwrap()).into_bytes().into()
+        format!("{}-key-derivation-salt", self.user_id).into_bytes().into()
     }
 }
 
 fn main() {
     let key_config = KeyConfig {
-        user_id: Some("rigo".to_string()),
+        user_id: "rigo".to_string(),
     };
 
     // Encrypt a payload.
