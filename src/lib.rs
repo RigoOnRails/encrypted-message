@@ -69,7 +69,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
     /// - Returns an [`EncryptionError::Serialization`] error if the payload cannot be serialized into a JSON string.
     ///   See [`serde_json::to_value`] for more information.
     pub fn encrypt_with_key_config(payload: P, key_config: K) -> Result<Self, EncryptionError> {
-        // Serialize the payload into a JSON string, then convert it into a byte array.
+        // Serialize the payload into a JSON string, then convert it into a byte vector.
         let payload = serde_json::to_value(payload)?.to_string().into_bytes();
 
         let key = key_config.key();
