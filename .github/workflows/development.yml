@@ -61,4 +61,4 @@ jobs:
         run: diesel setup --database-url ${{ env.POSTGRES_DATABASE_URL }}
 
       - name: Run tests
-        run: cargo nextest run --all-targets --all-features
+        run: cargo nextest run --all-features
