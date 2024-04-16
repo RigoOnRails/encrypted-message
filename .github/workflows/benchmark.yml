@@ -1,9 +1,9 @@
+name: Benchmark
 on:
   push:
     branches: main
 jobs:
   benchmark:
-    name: Continuous Benchmarking with Bencher
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
