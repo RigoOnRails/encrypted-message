@@ -1,6 +1,8 @@
 [package]
 name = "encrypted-message"
-description = "Application-level encryption to safely store sensitive data."
+description = "Safely encrypt & store serializable data using AES-256-GCM."
+keywords = ["encryption", "aes", "diesel"]
+categories = ["cryptography"]
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
