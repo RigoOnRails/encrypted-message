@@ -27,8 +27,13 @@ fn key_config_with_external_dependency() {
     };
 
     // Decrypt the payload.
-    encrypted.decrypt_with_key_config(key_config.clone()).unwrap();
+    let decrypted = encrypted.decrypt_with_key_config(key_config.clone()).unwrap();
+    assert_eq!(decrypted, "Hi");
 
     // Create a new encrypted message with the same encryption type.
-    encrypted.with_new_payload_and_key_config("Bonjour".to_string(), key_config).unwrap();
+    let encrypted = encrypted.with_new_payload_and_key_config("Bonjour".to_string(), key_config.clone()).unwrap();
+
+    // Decrypt the new payload.
+    let decrypted = encrypted.decrypt_with_key_config(key_config).unwrap();
+    assert_eq!(decrypted, "Bonjour");
 }
