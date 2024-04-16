@@ -1,0 +1,20 @@
+on:
+  push:
+    branches: main
+jobs:
+  benchmark:
+    name: Continuous Benchmarking with Bencher
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Bencher
+        uses: bencherdev/bencher@main
+
+      - name: Track benchmarks with Bencher
+        env:
+          BENCHER_PROJECT: encrypted-message
+          BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
+          BENCHER_TESTBED: ubuntu-latest
+        run: bencher run --adapter rust_criterion --err "cargo bench --all-features"
