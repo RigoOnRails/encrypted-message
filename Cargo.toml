@@ -28,9 +28,14 @@ diesel = ["dep:diesel"]
 diesel-mysql = ["diesel/mysql"]
 diesel-postgres = ["diesel/postgres"]
 
+[dev-dependencies]
+criterion = { version = "0.5.1", features = ["html_reports"] }
+dotenvy = "0.15.7"
+uuid = { version = "1.8.0", features = ["v4"] }
+
 [profile.dev.package.sha2]
 opt-level = 1
 
-[dev-dependencies]
-dotenvy = "0.15.7"
-uuid = { version = "1.8.0", features = ["v4"] }
+[[bench]]
+name = "encrypted-message"
+harness = false
