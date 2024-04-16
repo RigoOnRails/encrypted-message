@@ -63,14 +63,14 @@ mod tests {
 
         #[test]
         fn nonce_is_deterministic() {
-            let key = TestKeyConfig.key();
+            let key = TestKeyConfig.primary_key();
             let nonce = Deterministic::generate_nonce_for("rigo is cool".as_bytes(), key.expose_secret());
 
             // Test that the nonce is 12 bytes long.
             assert_eq!(nonce.len(), 12);
 
             // Test that the nonce is deterministic.
-            assert_eq!(nonce, *base64::decode("3gCtDpVQCVyV6Pyg").unwrap());
+            assert_eq!(nonce, *base64::decode("Ts2jGkMEW9NFsQZX").unwrap());
         }
     }
 
@@ -80,7 +80,7 @@ mod tests {
         #[test]
         fn nonce_is_randomized() {
             let payload = "much secret much secure".as_bytes();
-            let key = TestKeyConfig.key();
+            let key = TestKeyConfig.primary_key();
             let first_nonce = Randomized::generate_nonce_for(payload, key.expose_secret());
             let second_nonce = Randomized::generate_nonce_for(payload, key.expose_secret());
 

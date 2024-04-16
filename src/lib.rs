@@ -1,6 +1,8 @@
 pub mod key_config;
 pub use key_config::KeyConfig;
 
+pub mod key_generator;
+
 pub mod encryption_type;
 use encryption_type::EncryptionType;
 
@@ -72,7 +74,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
         // Serialize the payload into a JSON string, then convert it into a byte vector.
         let payload = serde_json::to_value(payload)?.to_string().into_bytes();
 
-        let key = key_config.key();
+        let key = key_config.primary_key();
         let nonce = E::generate_nonce_for(&payload, key.expose_secret());
         let cipher = Aes256Gcm::new_from_slice(key.expose_secret()).unwrap();
 
@@ -104,8 +106,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
         let nonce = base64::decode(&self.headers.nonce)?;
         let tag = base64::decode(&self.headers.tag)?;
 
-        for raw_key in key_config.raw_keys() {
-            let key = key_config.derive_key(raw_key.expose_secret());
+        for key in key_config.keys() {
             let cipher = Aes256Gcm::new_from_slice(key.expose_secret()).unwrap();
 
             let mut buffer = payload.clone();
@@ -167,10 +168,10 @@ mod tests {
             assert_eq!(
                 EncryptedMessage::<String, Deterministic, TestKeyConfig>::encrypt("rigo does pretty codes".to_string()).unwrap(),
                 EncryptedMessage {
-                    payload: "SBwByX5cxBSMgPlixDEf0pYEa6W41TIA".to_string(),
+                    payload: "K6FbTsR8lNt9osq7vfvpDl4gPOxaQUhH".to_string(),
                     headers: EncryptedMessageHeaders {
-                        nonce: "xg172uWMpjJqmWro".to_string(),
-                        tag: "S88wdO9tf/381mZQ88kMNw==".to_string(),
+                        nonce: "1WOXnWc3iX5iA3wd".to_string(),
+                        tag: "fdnw5HvNImSdBm0nTFiRFw==".to_string(),
                     },
                     payload_type: PhantomData,
                     encryption_type: PhantomData,
@@ -202,16 +203,9 @@ mod tests {
         use super::*;
 
         #[test]
-        fn deterministic() {
+        fn decrypts_correctly() {
             let payload = "hi :D".to_string();
             let message = EncryptedMessage::<String, Deterministic, TestKeyConfig>::encrypt(payload.clone()).unwrap();
-            assert_eq!(message.decrypt().unwrap(), payload);
-        }
-
-        #[test]
-        fn randomized() {
-            let payload = "hi :D".to_string();
-            let message = EncryptedMessage::<String, Randomized, TestKeyConfig>::encrypt(payload.clone()).unwrap();
             assert_eq!(message.decrypt().unwrap(), payload);
         }
 
@@ -286,29 +280,29 @@ mod tests {
 
     #[test]
     fn allows_rotating_keys() {
-        // Created using `Deterministic`'s second key.
+        // Created using TestConfig's second key.
         let message = EncryptedMessage {
-            payload: "D6lZNGd5Jw==".to_string(),
+            payload: "DT6PJ1ROSA==".to_string(),
             headers: EncryptedMessageHeaders {
-                nonce: "QMDFOQuKaUD9o9AP".to_string(),
-                tag: "gn1Wgm1bgbgl9wjAv1PFYA==".to_string(),
+                nonce: "nv6rH50Sn2Po320K".to_string(),
+                tag: "ZtAoub/4fB30QetW+O7oaA==".to_string(),
             },
             payload_type: PhantomData::<String>,
             encryption_type: PhantomData::<Deterministic>,
             key_config: PhantomData::<TestKeyConfig>,
         };
 
-        // Ensure that it can be decrypted even though the key is not primary anymore.
-        let expected_payload = "hi :)".to_string();
-        assert_eq!(message.decrypt().unwrap(), expected_payload);
-
         // Ensure that if encrypting the same value, it'll be different since it'll use the new primary key.
         // Note that we're using the `Deterministic` encryption type, so the encrypted message would be the
         // same if the key was the same.
+        let expected_payload = "hi :)".to_string();
         assert_ne!(
-            EncryptedMessage::<String, Deterministic, TestKeyConfig>::encrypt(expected_payload).unwrap(),
+            EncryptedMessage::<String, Deterministic, TestKeyConfig>::encrypt(expected_payload.clone()).unwrap(),
             message,
-        )
+        );
+
+        // Ensure that it can be decrypted even though the key is not primary anymore.
+        assert_eq!(message.decrypt().unwrap(), expected_payload);
     }
 
     #[test]

@@ -37,5 +37,5 @@ uuid = { version = "1.8.0", features = ["v4"] }
 opt-level = 1
 
 [[bench]]
-name = "encrypted-message"
+name = "encrypted_message"
 harness = false

@@ -1,18 +1,14 @@
 //! This example demonstrates how to use `encrypted-message`
 //! to encrypt & decrypt a payload.
 
-use encrypted_message::{EncryptedMessage, encryption_type::Randomized};
+use encrypted_message::{EncryptedMessage, encryption_type::Randomized, key_config::Secret};
 
-// NOTE: Never hardcode your keys like this, obviously.
+/// NOTE: Never hardcode your keys like this, obviously.
 #[derive(Debug, Default)]
 struct KeyConfig;
 impl encrypted_message::KeyConfig for KeyConfig {
-    fn raw_keys(&self) -> Vec<secrecy::SecretVec<u8>> {
-        vec![b"Fl1cANaYYRKWjmZPMDG2a3lhMnulSBqx".to_vec().into()]
-    }
-
-    fn key_derivation_salt(&self) -> secrecy::SecretVec<u8> {
-        b"ucTe1weWDJC0zz8Pl4pDMR4ydgnuUsZZ".to_vec().into()
+    fn keys(&self) -> Vec<Secret<[u8; 32]>> {
+        vec![(*b"Fl1cANaYYRKWjmZPMDG2a3lhMnulSBqx").into()]
     }
 }
 
