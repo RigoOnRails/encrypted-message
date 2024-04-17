@@ -19,7 +19,7 @@ impl encrypted_message::KeyConfig for UserKeyConfig {
 }
 
 #[test]
-fn key_config_with_external_dependency() {
+fn key_config_with_external_data() {
     let key_config = UserKeyConfig {
         user_key: "human-provided-key".to_string().into(),
     };
