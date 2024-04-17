@@ -4,23 +4,24 @@ use encrypted_message::{
     key_config::Secret,
     key_generator,
 };
+use secrecy::{ExposeSecret as _, SecretString};
 
 #[derive(Debug, Clone)]
 struct UserKeyConfig {
-    user_key: String,
+    user_key: SecretString,
 }
 
 impl encrypted_message::KeyConfig for UserKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let salt = b"8NdZhr1RcdoaVyHYDrPOWuZu8WlBlTwI";
-        vec![key_generator::derive_key_from(self.user_key.as_bytes(), salt, 2_u32.pow(16))]
+        vec![key_generator::derive_key_from(self.user_key.expose_secret().as_bytes(), salt, 2_u32.pow(16))]
     }
 }
 
 #[test]
 fn key_config_with_external_dependency() {
     let key_config = UserKeyConfig {
-        user_key: "rigos-weak-key-because-hes-a-human".to_string(),
+        user_key: "human-provided-key".to_string().into(),
     };
 
     // Encrypt a payload.
