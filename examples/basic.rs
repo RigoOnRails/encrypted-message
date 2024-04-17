@@ -12,18 +12,22 @@ impl encrypted_message::KeyConfig for KeyConfig {
     }
 }
 
-fn main() {
-    // Encrypt a payload.
-    let encrypted: EncryptedMessage<String, Randomized, KeyConfig> = {
-        EncryptedMessage::encrypt("Hi".to_string()).unwrap()
-    };
-    println!("Encrypted: {:#?}", encrypted);
+struct User {
+    diary: EncryptedMessage<String, Randomized, KeyConfig>,
+}
 
-    // Decrypt the payload.
-    let decrypted = encrypted.decrypt().unwrap();
+fn main() {
+    // Encrypt a user's diary.
+    let mut user = User {
+        diary: EncryptedMessage::encrypt("Very personal stuff".to_string()).unwrap(),
+    };
+    println!("Encrypted diary: {:#?}", user.diary);
+
+    // Decrypt the user's diary.
+    let decrypted = user.diary.decrypt().unwrap();
     println!("Decrypted: {decrypted}");
 
-    // Create a new encrypted message with the same encryption type & key config.
-    let encrypted = encrypted.with_new_payload("Bonjour".to_string()).unwrap();
-    println!("Encrypted with new payload: {:#?}", encrypted);
+    // Update the user's diary using the same encryption type & key config.
+    user.diary = user.diary.with_new_payload("More personal stuff".to_string()).unwrap();
+    println!("New encrypted diary: {:#?}", user.diary);
 }
