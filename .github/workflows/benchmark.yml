@@ -14,7 +14,7 @@ jobs:
 
       - name: Track benchmarks with Bencher
         env:
-          BENCHER_PROJECT: rust-encrypted-message
+          BENCHER_PROJECT: encrypted-message
           BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}
           BENCHER_TESTBED: ubuntu-latest
         run: bencher run --adapter rust_criterion --err "cargo bench --all-features"
