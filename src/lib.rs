@@ -1,8 +1,6 @@
 pub mod key_config;
 pub use key_config::KeyConfig;
 
-pub mod key_generator;
-
 pub mod encryption_type;
 use encryption_type::EncryptionType;
 
@@ -11,7 +9,7 @@ pub use error::{EncryptionError, DecryptionError};
 
 mod integrations;
 
-mod utilities;
+pub mod utilities;
 use utilities::base64;
 
 #[cfg(test)]

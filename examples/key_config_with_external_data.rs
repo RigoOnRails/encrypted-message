@@ -5,7 +5,7 @@ use encrypted_message::{
     EncryptedMessage,
     encryption_type::Randomized,
     key_config::Secret,
-    key_generator,
+    utilities::key_generation::derive_key_from,
 };
 use rand::distributions::{Alphanumeric, DistString};
 use secrecy::{ExposeSecret as _, SecretString};
@@ -23,7 +23,7 @@ struct UserKeyConfig {
 impl encrypted_message::KeyConfig for UserKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let salt = Alphanumeric.sample_string(&mut rand::thread_rng(), 32).into_bytes();
-        vec![key_generator::derive_key_from(self.user_key.expose_secret().as_bytes(), &salt, 2_u32.pow(16))]
+        vec![derive_key_from(self.user_key.expose_secret().as_bytes(), &salt, 2_u32.pow(16))]
     }
 }
 

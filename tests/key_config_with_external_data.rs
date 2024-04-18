@@ -2,7 +2,7 @@ use encrypted_message::{
     EncryptedMessage,
     encryption_type::Randomized,
     key_config::Secret,
-    key_generator,
+    utilities::key_generation::derive_key_from,
 };
 use secrecy::{ExposeSecret as _, SecretString};
 
@@ -14,7 +14,7 @@ struct UserKeyConfig {
 impl encrypted_message::KeyConfig for UserKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let salt = b"8NdZhr1RcdoaVyHYDrPOWuZu8WlBlTwI";
-        vec![key_generator::derive_key_from(self.user_key.expose_secret().as_bytes(), salt, 2_u32.pow(16))]
+        vec![derive_key_from(self.user_key.expose_secret().as_bytes(), salt, 2_u32.pow(16))]
     }
 }
 
