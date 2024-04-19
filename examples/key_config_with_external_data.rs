@@ -10,8 +10,7 @@ use encrypted_message::{
 use secrecy::{ExposeSecret as _, SecretString};
 
 /// NOTE: When depending on human-provided keys/passwords, ensure you derive them
-/// using [`encrypted_message::key_generator::derive_key_from`].
-/// Using a human-provided key directly is not secure as they're likely to be weak.
+/// using [`derive_key_from`]. Using a human-provided key directly is not secure as they're likely to be weak.
 ///
 /// You should also use the `secrecy` crate in cases like these, to ensure safe key handling.
 #[derive(Debug, Clone)]
