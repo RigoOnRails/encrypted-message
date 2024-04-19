@@ -29,7 +29,7 @@ encrypted-message = { version = "0.2", features = ["diesel", "diesel-<mysql|post
 
 ## Security
 
-This crate uses trusted, pure Rust encryption using the [`aes_gcm`](https://crates.io/crates/aes_gcm) crate
+This crate uses trusted, pure-Rust encryption using the [`aes_gcm`](https://crates.io/crates/aes_gcm) crate
 from the [Rust Crypto][rust-crypto] organization.
 
 Keys are handled safely using the [`secrecy`](https://crates.io/crates/secrecy) crate,
