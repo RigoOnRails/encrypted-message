@@ -13,8 +13,8 @@ struct UserKeyConfig {
 
 impl encrypted_message::KeyConfig for UserKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
-        let salt = b"8NdZhr1RcdoaVyHYDrPOWuZu8WlBlTwI";
-        vec![derive_key_from(self.user_key.expose_secret().as_bytes(), salt, 2_u32.pow(16))]
+        let salt = hex::decode("384e645a6872315263646f61567948594472504f57755a7538576c426c547749").unwrap();
+        vec![derive_key_from(self.user_key.expose_secret().as_bytes(), &salt, 2_u32.pow(16))]
     }
 }
 
