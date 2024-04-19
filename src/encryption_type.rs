@@ -2,7 +2,6 @@ use std::fmt::Debug;
 
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
-use rand::Rng as _;
 
 mod private {
     pub trait Sealed {}
@@ -43,10 +42,7 @@ pub struct Randomized;
 impl EncryptionType for Randomized {
     /// Generates a random 96-bit nonce for the payload.
     fn generate_nonce_for(_payload: &[u8], _key: &[u8]) -> [u8; 12] {
-        let mut buffer = [0; 12];
-        rand::thread_rng().fill(&mut buffer);
-
-        buffer
+        rand::random()
     }
 }
 
