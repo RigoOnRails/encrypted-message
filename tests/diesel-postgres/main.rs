@@ -3,13 +3,18 @@
 mod schema;
 
 use diesel::prelude::*;
-use encrypted_message::{encryption_type::{Randomized, Deterministic}, EncryptedMessage, key_config::Secret};
+use encrypted_message::{
+    EncryptedMessage,
+    encryption_type::{Randomized, Deterministic},
+    key_config::Secret,
+    utilities::key_decoder::HexKeyDecoder,
+};
 
 #[derive(Debug, Default)]
 struct KeyConfig;
 impl encrypted_message::KeyConfig for KeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
-        vec![(*b"Fl1cANaYYRKWjmZPMDG2a3lhMnulSBqx").into()]
+        HexKeyDecoder::decode_keys(&["75754f7866705767526749456f33644972646f30686e484a484631686e747657"])
     }
 }
 

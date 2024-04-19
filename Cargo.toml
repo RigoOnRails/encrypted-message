@@ -14,6 +14,7 @@ repository = "https://github.com/RigoOnRails/encrypted-message"
 aes-gcm = "0.10.3"
 base64 = "0.22.0"
 diesel = { version = "2.1.5", optional = true, features = ["serde_json"] }
+hex = "0.4.3"
 hmac = "0.12.1"
 pbkdf2 = "0.12.2"
 rand = "0.8.5"
