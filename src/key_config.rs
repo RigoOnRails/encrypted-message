@@ -2,11 +2,9 @@ use std::fmt::Debug;
 
 pub use secrecy::Secret;
 
-/// A trait to define the configuration for the encryption/decryption process
-/// of an [`EncryptedMessage`](crate::EncryptedMessage).
+/// A trait to define a key configuration to use with [`EncryptedMessage`](crate::EncryptedMessage).
 ///
-/// This trait allows you to effectively define different keys for different
-/// kinds of data.
+/// This allows you to effectively define different keys for different kinds of data if needed.
 ///
 /// It's recommended to use different implementations for [`Deterministic`](crate::encryption_type::Deterministic)
 /// & [`Randomized`](crate::encryption_type::Randomized) with different keys.
