@@ -14,7 +14,7 @@ use encrypted_message::{
 struct KeyConfig;
 impl encrypted_message::KeyConfig for KeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
-        HexKeyDecoder::decode_keys(&["75754f7866705767526749456f33644972646f30686e484a484631686e747657"])
+        HexKeyDecoder::decode_keys(vec![String::from("75754f7866705767526749456f33644972646f30686e484a484631686e747657").into()])
     }
 }
 
