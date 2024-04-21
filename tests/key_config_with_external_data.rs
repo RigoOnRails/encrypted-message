@@ -6,7 +6,7 @@ use encrypted_message::{
 };
 use secrecy::{ExposeSecret as _, SecretString};
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 struct UserKeyConfig {
     user_key: SecretString,
 }
@@ -26,17 +26,17 @@ fn key_config_with_external_data() {
 
     // Encrypt a payload.
     let encrypted: EncryptedMessage<String, Randomized, UserKeyConfig> = {
-        EncryptedMessage::encrypt_with_key_config("Hi".to_string(), key_config.clone()).unwrap()
+        EncryptedMessage::encrypt_with_key_config("Hi".to_string(), &key_config).unwrap()
     };
 
     // Decrypt the payload.
-    let decrypted = encrypted.decrypt_with_key_config(key_config.clone()).unwrap();
+    let decrypted = encrypted.decrypt_with_key_config(&key_config).unwrap();
     assert_eq!(decrypted, "Hi");
 
     // Create a new encrypted message with the same encryption type.
-    let encrypted = encrypted.with_new_payload_and_key_config("Bonjour".to_string(), key_config.clone()).unwrap();
+    let encrypted = encrypted.with_new_payload_and_key_config("Bonjour".to_string(), &key_config).unwrap();
 
     // Decrypt the new payload.
-    let decrypted = encrypted.decrypt_with_key_config(key_config).unwrap();
+    let decrypted = encrypted.decrypt_with_key_config(&key_config).unwrap();
     assert_eq!(decrypted, "Bonjour");
 }

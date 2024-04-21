@@ -68,7 +68,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
     ///
     /// - Returns an [`EncryptionError::Serialization`] error if the payload cannot be serialized into a JSON string.
     ///   See [`serde_json::to_value`] for more information.
-    pub fn encrypt_with_key_config(payload: P, key_config: K) -> Result<Self, EncryptionError> {
+    pub fn encrypt_with_key_config(payload: P, key_config: &K) -> Result<Self, EncryptionError> {
         // Serialize the payload into a JSON string, then convert it into a byte vector.
         let payload = serde_json::to_value(payload)?.to_string().into_bytes();
 
@@ -99,7 +99,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
     /// - Returns a [`DecryptionError::Decryption`] error if the payload cannot be decrypted with any of the available keys.
     /// - Returns a [`DecryptionError::Deserialization`] error if the payload cannot be deserialized into the expected type.
     ///   See [`serde_json::from_slice`] for more information.
-    pub fn decrypt_with_key_config(&self, key_config: K) -> Result<P, DecryptionError> {
+    pub fn decrypt_with_key_config(&self, key_config: &K) -> Result<P, DecryptionError> {
         let payload = base64::decode(&self.payload)?;
         let nonce = base64::decode(&self.headers.nonce)?;
         let tag = base64::decode(&self.headers.tag)?;
@@ -122,7 +122,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
     /// the same encryption type, but with a new encrypted payload.
     ///
     /// See [`EncryptedMessage::encrypt_with_key_config`] for more information.
-    pub fn with_new_payload_and_key_config(self, payload: P, key_config: K) -> Result<Self, EncryptionError> {
+    pub fn with_new_payload_and_key_config(self, payload: P, key_config: &K) -> Result<Self, EncryptionError> {
         Self::encrypt_with_key_config(payload, key_config)
     }
 }
@@ -131,19 +131,19 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig + 
     /// This method is a shorthand for [`EncryptedMessage::encrypt_with_key_config`],
     /// passing `K::default()` as the key configuration.
     pub fn encrypt(payload: P) -> Result<Self, EncryptionError> {
-        Self::encrypt_with_key_config(payload, K::default())
+        Self::encrypt_with_key_config(payload, &K::default())
     }
 
     /// This method is a shorthand for [`EncryptedMessage::decrypt_with_key_config`],
     /// passing `K::default()` as the key configuration.
     pub fn decrypt(&self) -> Result<P, DecryptionError> {
-        self.decrypt_with_key_config(K::default())
+        self.decrypt_with_key_config(&K::default())
     }
 
     /// This method is a shorthand for [`EncryptedMessage::with_new_payload_and_key_config`],
     /// passing `K::default()` as the key configuration.
     pub fn with_new_payload(self, payload: P) -> Result<Self, EncryptionError> {
-        self.with_new_payload_and_key_config(payload, K::default())
+        self.with_new_payload_and_key_config(payload, &K::default())
     }
 }
 

@@ -13,7 +13,7 @@ use secrecy::{ExposeSecret as _, SecretString};
 /// using [`derive_key_from`]. Using a human-provided key directly is not secure as they're likely to be weak.
 ///
 /// You should also use the `secrecy` crate in cases like these, to ensure safe key handling.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 struct UserKeyConfig {
     user_key: SecretString,
 }
@@ -36,15 +36,19 @@ fn main() {
 
     // Encrypt a user's diary.
     let mut user = User {
-        diary: EncryptedMessage::encrypt_with_key_config("Very personal stuff".to_string(), key_config.clone()).unwrap(),
+        diary: EncryptedMessage::encrypt_with_key_config("Very personal stuff".to_string(), &key_config).unwrap(),
     };
     println!("Encrypted diary: {:#?}", user.diary);
 
     // Decrypt the user's diary.
-    let decrypted = user.diary.decrypt_with_key_config(key_config.clone()).unwrap();
-    println!("Decrypted: {decrypted}");
+    let decrypted = user.diary.decrypt_with_key_config(&key_config).unwrap();
+    println!("Decrypted diary: {decrypted}");
 
     // Update the user's diary using the same encryption type & key config.
-    user.diary = user.diary.with_new_payload_and_key_config("More personal stuff".to_string(), key_config).unwrap();
+    user.diary = user.diary.with_new_payload_and_key_config("More personal stuff".to_string(), &key_config).unwrap();
     println!("New encrypted diary: {:#?}", user.diary);
+
+    // Decrypt the updated diary.
+    let decrypted = user.diary.decrypt_with_key_config(&key_config).unwrap();
+    println!("New decrypted diary: {decrypted}");
 }
