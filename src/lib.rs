@@ -295,19 +295,19 @@ impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, K: KeyConfig> Encrypt
 
 impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, K: KeyConfig + Default> EncryptedMessage<P, S, K> {
     /// This method is a shorthand for [`EncryptedMessage::encrypt_with_key_config`],
-    /// passing `K::default()` as the key configuration.
+    /// passing `&K::default()` as the key configuration.
     pub fn encrypt(payload: P) -> Result<Self, EncryptionError> {
         Self::encrypt_with_key_config(payload, &K::default())
     }
 
     /// This method is a shorthand for [`EncryptedMessage::decrypt_with_key_config`],
-    /// passing `K::default()` as the key configuration.
+    /// passing `&K::default()` as the key configuration.
     pub fn decrypt(&self) -> Result<P, DecryptionError> {
         self.decrypt_with_key_config(&K::default())
     }
 
     /// This method is a shorthand for [`EncryptedMessage::with_new_payload_and_key_config`],
-    /// passing `K::default()` as the key configuration.
+    /// passing `&K::default()` as the key configuration.
     pub fn with_new_payload(self, payload: P) -> Result<Self, EncryptionError> {
         self.with_new_payload_and_key_config(payload, &K::default())
     }
