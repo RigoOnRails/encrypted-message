@@ -15,13 +15,15 @@ use secrecy::{ExposeSecret as _, SecretString};
 /// You should also use the `secrecy` crate in cases like these, to ensure safe key handling.
 #[derive(Debug)]
 struct UserKeyConfig {
-    user_key: SecretString,
+    user_password: SecretString,
+    salt: SecretString,
 }
 
 impl encrypted_message::KeyConfig for UserKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
-        let salt = hex::decode("384e645a6872315263646f61567948594472504f57755a7538576c426c547749").unwrap();
-        vec![derive_key_from(self.user_key.expose_secret().as_bytes(), &salt, 2_u32.pow(16))]
+        let raw_key = self.user_password.expose_secret().as_bytes();
+        let salt = self.salt.expose_secret().as_bytes();
+        vec![derive_key_from(&raw_key, &salt, 2_u32.pow(16))]
     }
 }
 
@@ -31,7 +33,8 @@ struct User {
 
 fn main() {
     let key_config = UserKeyConfig {
-        user_key: "rigos-weak-key-because-hes-a-human".to_string().into(),
+        user_password: "human-password-that-should-be-derived".to_string().into(),
+        salt: "unique-salt".to_string().into(),
     };
 
     // Encrypt a user's diary.
