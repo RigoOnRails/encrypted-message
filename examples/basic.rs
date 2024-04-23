@@ -3,7 +3,7 @@
 
 use encrypted_message::{
     EncryptedMessage,
-    encryption_type::Randomized,
+    strategy::Randomized,
     key_config::Secret,
     utilities::key_decoder::HexKeyDecoder,
 };
@@ -32,7 +32,7 @@ fn main() {
     let decrypted = user.diary.decrypt().unwrap();
     println!("Decrypted diary: {decrypted}");
 
-    // Update the user's diary using the same encryption type & key config.
+    // Update the user's diary using the same encryption strategy & key config.
     user.diary = user.diary.with_new_payload("More personal stuff".to_string()).unwrap();
     println!("New encrypted diary: {:#?}", user.diary);
 

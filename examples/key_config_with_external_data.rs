@@ -3,7 +3,7 @@
 
 use encrypted_message::{
     EncryptedMessage,
-    encryption_type::Randomized,
+    strategy::Randomized,
     key_config::Secret,
     utilities::key_generation::derive_key_from,
 };
@@ -23,7 +23,7 @@ impl encrypted_message::KeyConfig for UserKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let raw_key = self.user_password.expose_secret().as_bytes();
         let salt = self.salt.expose_secret().as_bytes();
-        vec![derive_key_from(&raw_key, &salt, 2_u32.pow(16))]
+        vec![derive_key_from(raw_key, salt, 2_u32.pow(16))]
     }
 }
 
@@ -47,7 +47,7 @@ fn main() {
     let decrypted = user.diary.decrypt_with_key_config(&key_config).unwrap();
     println!("Decrypted diary: {decrypted}");
 
-    // Update the user's diary using the same encryption type & key config.
+    // Update the user's diary using the same encryption strategy & key config.
     user.diary = user.diary.with_new_payload_and_key_config("More personal stuff".to_string(), &key_config).unwrap();
     println!("New encrypted diary: {:#?}", user.diary);
 

@@ -40,19 +40,19 @@
 //! openssl rand -hex 32
 //! ```
 //!
-//! # Encryption types
+//! # Encryption strategies
 //!
-//! Two encryption types are provided, [`Deterministic`](crate::encryption_type::Deterministic) & [`Randomized`](crate::encryption_type::Randomized).
+//! Two encryption strategies are provided, [`Deterministic`](crate::strategy::Deterministic) & [`Randomized`](crate::strategy::Randomized).
 //!
-//! - [`Deterministic`](crate::encryption_type::Deterministic) encryption will always produce the same encrypted message for the same payload, allowing you to query encrypted data.
-//! - [`Randomized`](crate::encryption_type::Randomized) encryption will always produce a different encrypted message for the same payload. More secure than [`Deterministic`](crate::encryption_type::Deterministic), but impossible to query without decrypting all data.
+//! - [`Deterministic`](crate::strategy::Deterministic) encryption will always produce the same encrypted message for the same payload, allowing you to query encrypted data.
+//! - [`Randomized`](crate::strategy::Randomized) encryption will always produce a different encrypted message for the same payload. More secure than [`Deterministic`](crate::strategy::Deterministic), but impossible to query without decrypting all data.
 //!
-//! It's recommended to use different keys for each encryption type.
+//! It's recommended to use different keys for each encryption strategy.
 //!
 //! # Defining encrypted fields
 //!
 //! You can now define your encrypted fields using the [`EncryptedMessage`] struct.
-//! The first type parameter is the payload type, the second is the encryption type, & the third is the key configuration type.
+//! The first type parameter is the payload type, the second is the encryption strategy, & the third is the key configuration type.
 //!
 //! ```
 //! # use encrypted_message::{
@@ -68,7 +68,7 @@
 //! #     }
 //! # }
 //! #
-//! use encrypted_message::{EncryptedMessage, encryption_type::Randomized};
+//! use encrypted_message::{EncryptedMessage, strategy::Randomized};
 //!
 //! struct User {
 //!     diary: EncryptedMessage<String, Randomized, KeyConfig>,
@@ -82,7 +82,7 @@
 //! # use encrypted_message::{
 //! #     EncryptedMessage,
 //! #     key_config::Secret,
-//! #     encryption_type::Randomized,
+//! #     strategy::Randomized,
 //! #     utilities::key_decoder::HexKeyDecoder,
 //! # };
 //! #
@@ -106,7 +106,7 @@
 //! // Decrypt the user's diary.
 //! let decrypted: String = user.diary.decrypt().unwrap();
 //!
-//! // Update the user's diary using the same encryption type & key config.
+//! // Update the user's diary using the same encryption strategy & key config.
 //! user.diary = user.diary.with_new_payload("More personal stuff".to_string()).unwrap();
 //! ```
 //!
@@ -115,7 +115,7 @@
 //! use encrypted_message::{
 //!     EncryptedMessage,
 //!     key_config::Secret,
-//!     encryption_type::Randomized,
+//!     strategy::Randomized,
 //!     utilities::key_generation::derive_key_from,
 //! };
 //! use secrecy::{ExposeSecret as _, SecretString};
@@ -152,7 +152,7 @@
 //! // Decrypt the user's diary.
 //! let decrypted: String = user.diary.decrypt_with_key_config(&key_config).unwrap();
 //!
-//! // Update the user's diary using the same encryption type & key config.
+//! // Update the user's diary using the same encryption strategy & key config.
 //! user.diary = user.diary.with_new_payload_and_key_config("More personal stuff".to_string(), &key_config).unwrap();
 //! ```
 //!
@@ -164,8 +164,8 @@
 //! - **MySQL**: Enable the `diesel` & `diesel-mysql` features. Supports the [`Json`](diesel::sql_types::Json) type.
 //! - **PostgreSQL**: Enable the `diesel` & `diesel-postgres` features. Supports the [`Json`](diesel::sql_types::Json) & [`Jsonb`](diesel::sql_types::Jsonb) types.
 
-pub mod encryption_type;
-use encryption_type::EncryptionType;
+pub mod strategy;
+use strategy::Strategy;
 
 pub mod error;
 pub use error::{EncryptionError, DecryptionError};
@@ -194,7 +194,7 @@ use secrecy::ExposeSecret as _;
 #[cfg_attr(feature = "diesel", derive(diesel::AsExpression, diesel::FromSqlRow))]
 #[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Json))]
 #[cfg_attr(all(feature = "diesel", feature = "diesel-postgres"), diesel(sql_type = diesel::sql_types::Jsonb))]
-pub struct EncryptedMessage<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> {
+pub struct EncryptedMessage<P: Debug + DeserializeOwned + Serialize, S: Strategy, K: KeyConfig> {
     /// The base64-encoded & encrypted payload.
     #[serde(rename = "p")]
     payload: String,
@@ -207,9 +207,9 @@ pub struct EncryptedMessage<P: Debug + DeserializeOwned + Serialize, E: Encrypti
     #[serde(skip)]
     payload_type: PhantomData<P>,
 
-    /// The encryption type used to encrypt the payload.
+    /// The encryption strategy used to encrypt the payload.
     #[serde(skip)]
-    encryption_type: PhantomData<E>,
+    strategy: PhantomData<S>,
 
     // The key configuration used to encrypt/decrypt the payload.
     #[serde(skip)]
@@ -227,7 +227,7 @@ struct EncryptedMessageHeaders {
     tag: String,
 }
 
-impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> EncryptedMessage<P, E, K> {
+impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, K: KeyConfig> EncryptedMessage<P, S, K> {
     /// Creates an [`EncryptedMessage`] from a payload, using the AES-256-GCM encryption cipher.
     ///
     /// # Errors
@@ -239,7 +239,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
         let payload = serde_json::to_value(payload)?.to_string().into_bytes();
 
         let key = key_config.primary_key();
-        let nonce = E::generate_nonce_for(&payload, key.expose_secret());
+        let nonce = S::generate_nonce_for(&payload, key.expose_secret());
         let cipher = Aes256Gcm::new_from_slice(key.expose_secret()).unwrap();
 
         let mut buffer = payload;
@@ -252,7 +252,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
                 tag: base64::encode(tag),
             },
             payload_type: PhantomData,
-            encryption_type: PhantomData,
+            strategy: PhantomData,
             key_config: PhantomData,
         })
     }
@@ -285,7 +285,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
     }
 
     /// Consumes the [`EncryptedMessage`] & returns a new one with
-    /// the same encryption type, but with a new encrypted payload.
+    /// the same encryption strategy, but with a new encrypted payload.
     ///
     /// See [`EncryptedMessage::encrypt_with_key_config`] for more information.
     pub fn with_new_payload_and_key_config(self, payload: P, key_config: &K) -> Result<Self, EncryptionError> {
@@ -293,7 +293,7 @@ impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig> E
     }
 }
 
-impl<P: Debug + DeserializeOwned + Serialize, E: EncryptionType, K: KeyConfig + Default> EncryptedMessage<P, E, K> {
+impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, K: KeyConfig + Default> EncryptedMessage<P, S, K> {
     /// This method is a shorthand for [`EncryptedMessage::encrypt_with_key_config`],
     /// passing `K::default()` as the key configuration.
     pub fn encrypt(payload: P) -> Result<Self, EncryptionError> {
@@ -320,7 +320,7 @@ mod tests {
     use serde_json::json;
 
     use crate::{
-        encryption_type::{Deterministic, Randomized},
+        strategy::{Deterministic, Randomized},
         testing::TestKeyConfig,
     };
 
@@ -338,7 +338,7 @@ mod tests {
                         tag: "fdnw5HvNImSdBm0nTFiRFw==".to_string(),
                     },
                     payload_type: PhantomData,
-                    encryption_type: PhantomData,
+                    strategy: PhantomData,
                     key_config: PhantomData,
                 },
             );
@@ -405,7 +405,7 @@ mod tests {
                     tag: "r/AdKM4Dp0YAr/7dzAqujw==".to_string(),
                 },
                 payload_type: PhantomData::<String>,
-                encryption_type: PhantomData::<Deterministic>,
+                strategy: PhantomData::<Deterministic>,
                 key_config: PhantomData::<TestKeyConfig>,
             };
 
@@ -421,7 +421,7 @@ mod tests {
                 payload: message.payload,
                 headers: message.headers,
                 payload_type: PhantomData::<u8>,
-                encryption_type: message.encryption_type,
+                strategy: message.strategy,
                 key_config: message.key_config,
             };
 
@@ -438,7 +438,7 @@ mod tests {
         let new_encrypted_payload = new_message.payload;
 
         assert_eq!(new_message.payload_type, PhantomData::<String>);
-        assert_eq!(new_message.encryption_type, PhantomData::<Deterministic>);
+        assert_eq!(new_message.strategy, PhantomData::<Deterministic>);
         assert_ne!(encrypted_payload, new_encrypted_payload);
     }
 
@@ -452,12 +452,12 @@ mod tests {
                 tag: "ZtAoub/4fB30QetW+O7oaA==".to_string(),
             },
             payload_type: PhantomData::<String>,
-            encryption_type: PhantomData::<Deterministic>,
+            strategy: PhantomData::<Deterministic>,
             key_config: PhantomData::<TestKeyConfig>,
         };
 
         // Ensure that if encrypting the same value, it'll be different since it'll use the new primary key.
-        // Note that we're using the `Deterministic` encryption type, so the encrypted message would be the
+        // Note that we're using the `Deterministic` encryption strategy, so the encrypted message would be the
         // same if the key was the same.
         let expected_payload = "hi :)".to_string();
         assert_ne!(
@@ -518,7 +518,7 @@ mod tests {
                 tag: "S88wdO9tf/381mZQ88kMNw==".to_string(),
             },
             payload_type: PhantomData::<String>,
-            encryption_type: PhantomData::<Deterministic>,
+            strategy: PhantomData::<Deterministic>,
             key_config: PhantomData::<TestKeyConfig>,
         };
 

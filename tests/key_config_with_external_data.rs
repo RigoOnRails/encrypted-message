@@ -1,6 +1,6 @@
 use encrypted_message::{
     EncryptedMessage,
-    encryption_type::Randomized,
+    strategy::Randomized,
     key_config::Secret,
     utilities::key_generation::derive_key_from,
 };
@@ -16,7 +16,7 @@ impl encrypted_message::KeyConfig for UserKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let raw_key = self.user_password.expose_secret().as_bytes();
         let salt = self.salt.expose_secret().as_bytes();
-        vec![derive_key_from(&raw_key, &salt, 2_u32.pow(16))]
+        vec![derive_key_from(raw_key, salt, 2_u32.pow(16))]
     }
 }
 
@@ -36,7 +36,7 @@ fn key_config_with_external_data() {
     let decrypted = encrypted.decrypt_with_key_config(&key_config).unwrap();
     assert_eq!(decrypted, "Hi");
 
-    // Create a new encrypted message with the same encryption type.
+    // Create a new encrypted message with the same encryption strategy.
     let encrypted = encrypted.with_new_payload_and_key_config("Bonjour".to_string(), &key_config).unwrap();
 
     // Decrypt the new payload.

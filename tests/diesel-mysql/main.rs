@@ -5,7 +5,7 @@ mod schema;
 use diesel::prelude::*;
 use encrypted_message::{
     EncryptedMessage,
-    encryption_type::Randomized,
+    strategy::Randomized,
     key_config::Secret,
     utilities::key_decoder::HexKeyDecoder,
 };

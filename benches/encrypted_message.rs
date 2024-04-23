@@ -1,7 +1,7 @@
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use encrypted_message::{
     EncryptedMessage,
-    encryption_type::{Deterministic, Randomized},
+    strategy::{Deterministic, Randomized},
     key_config::Secret,
 };
 use rand::distributions::{Alphanumeric, DistString};
