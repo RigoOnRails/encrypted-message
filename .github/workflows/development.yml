@@ -62,3 +62,6 @@ jobs:
 
       - name: Run tests
         run: cargo nextest run --all-features
+
+      - name: Run documentation tests
+        run: cargo test --doc --all-features

@@ -1,3 +1,5 @@
+//! All the encryption types that can be used with [`EncryptedMessage`](crate::EncryptedMessage).
+
 use std::fmt::Debug;
 
 use hmac::{Hmac, Mac};
@@ -36,7 +38,7 @@ impl EncryptionType for Deterministic {
 /// which will generate a different encrypted message every time.
 ///
 /// This encryption type improves security by making crypto-analysis of encrypted messages harder,
-/// but makes querying them impossible.
+/// but makes querying them without decrypting all data impossible.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Randomized;
 impl EncryptionType for Randomized {

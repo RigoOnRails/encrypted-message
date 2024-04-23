@@ -1,5 +1,168 @@
-pub mod key_config;
-pub use key_config::KeyConfig;
+//! Safely encrypt & store serializable data using AES-256-GCM.
+//!
+//! # Key configuration
+//!
+//! First, you need to create a key configuration that implements the [`KeyConfig`] trait.
+//! If your key configuration implements the [`Default`] trait, you can use the shorthand methods
+//! of the [`EncryptedMessage`] struct.
+//!
+//! The first key provided is considered the primary key, & is always used to encrypt new payloads.
+//! The following keys are used in the order provided when the primary key can't decrypt a payload. This allows you to rotate keys.
+//!
+//! Two key decoders are provided, [`HexKeyDecoder`](crate::utilities::key_decoder::HexKeyDecoder)
+//! & [`Base64KeyDecoder`](crate::utilities::key_decoder::Base64KeyDecoder),
+//! to help you store your key(s) as strings.
+//!
+//! ```
+//! use encrypted_message::{
+//!     key_config::Secret,
+//!     utilities::key_decoder::HexKeyDecoder,
+//! };
+//!
+//! #[derive(Debug, Default)]
+//! struct KeyConfig;
+//! impl encrypted_message::KeyConfig for KeyConfig {
+//!     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
+//!         // Load the keys from an environment variable, & wrap them in a `Secret`.
+//!         let keys = std::env::var("ENCRYPTION_KEYS").unwrap()
+//!             .split(", ")
+//!             .map(|key| Secret::new(key.to_string()))
+//!             .collect();
+//!
+//!         HexKeyDecoder::decode_keys(keys)
+//!     }
+//! }
+//! ```
+//!
+//! You can generate secure 32-byte keys using the `openssl` command-line tool. Remember to use
+//! [`HexKeyDecoder`](crate::utilities::key_decoder::HexKeyDecoder) to decode the key.
+//! ```sh
+//! openssl rand -hex 32
+//! ```
+//!
+//! # Encryption types
+//!
+//! Two encryption types are provided, [`Deterministic`](crate::encryption_type::Deterministic) & [`Randomized`](crate::encryption_type::Randomized).
+//!
+//! - [`Deterministic`](crate::encryption_type::Deterministic) encryption will always produce the same encrypted message for the same payload, allowing you to query encrypted data.
+//! - [`Randomized`](crate::encryption_type::Randomized) encryption will always produce a different encrypted message for the same payload. More secure than [`Deterministic`](crate::encryption_type::Deterministic), but impossible to query without decrypting all data.
+//!
+//! It's recommended to use different keys for each encryption type.
+//!
+//! # Defining encrypted fields
+//!
+//! You can now define your encrypted fields using the [`EncryptedMessage`] struct.
+//! The first type parameter is the payload type, the second is the encryption type, & the third is the key configuration type.
+//!
+//! ```
+//! # use encrypted_message::{
+//! #     key_config::Secret,
+//! #     utilities::key_decoder::HexKeyDecoder,
+//! # };
+//! #
+//! # #[derive(Debug, Default)]
+//! # struct KeyConfig;
+//! # impl encrypted_message::KeyConfig for KeyConfig {
+//! #     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
+//! #         HexKeyDecoder::decode_keys(vec![String::from("75754f7866705767526749456f33644972646f30686e484a484631686e747657").into()])
+//! #     }
+//! # }
+//! #
+//! use encrypted_message::{EncryptedMessage, encryption_type::Randomized};
+//!
+//! struct User {
+//!     diary: EncryptedMessage<String, Randomized, KeyConfig>,
+//! }
+//! ```
+//!
+//! # Encrypting & decrypting payloads
+//!
+//! If your [`KeyConfig`] implements the [`Default`] trait (like above), you can use the shorthand methods:
+//! ```
+//! # use encrypted_message::{
+//! #     EncryptedMessage,
+//! #     key_config::Secret,
+//! #     encryption_type::Randomized,
+//! #     utilities::key_decoder::HexKeyDecoder,
+//! # };
+//! #
+//! # #[derive(Debug, Default)]
+//! # struct KeyConfig;
+//! # impl encrypted_message::KeyConfig for KeyConfig {
+//! #     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
+//! #         HexKeyDecoder::decode_keys(vec![String::from("75754f7866705767526749456f33644972646f30686e484a484631686e747657").into()])
+//! #     }
+//! # }
+//! #
+//! # struct User {
+//! #     diary: EncryptedMessage<String, Randomized, KeyConfig>,
+//! # }
+//! #
+//! // Encrypt a user's diary.
+//! let mut user = User {
+//!     diary: EncryptedMessage::encrypt("Very personal stuff".to_string()).unwrap(),
+//! };
+//!
+//! // Decrypt the user's diary.
+//! let decrypted: String = user.diary.decrypt().unwrap();
+//!
+//! // Update the user's diary using the same encryption type & key config.
+//! user.diary = user.diary.with_new_payload("More personal stuff".to_string()).unwrap();
+//! ```
+//!
+//! If your [`KeyConfig`] depends on external data:
+//! ```
+//! use encrypted_message::{
+//!     EncryptedMessage,
+//!     key_config::Secret,
+//!     encryption_type::Randomized,
+//!     utilities::key_generation::derive_key_from,
+//! };
+//! use secrecy::{ExposeSecret as _, SecretString};
+//!
+//! #[derive(Debug)]
+//! struct UserKeyConfig {
+//!     user_password: SecretString,
+//!     salt: SecretString,
+//! }
+//!
+//! impl encrypted_message::KeyConfig for UserKeyConfig {
+//!     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
+//!         let raw_key = self.user_password.expose_secret().as_bytes();
+//!         let salt = self.salt.expose_secret().as_bytes();
+//!         vec![derive_key_from(&raw_key, &salt, 2_u32.pow(16))]
+//!     }
+//! }
+//!
+//! struct User {
+//!     diary: EncryptedMessage<String, Randomized, UserKeyConfig>,
+//! }
+//!
+//! // Define the user's key configuration.
+//! let key_config = UserKeyConfig {
+//!     user_password: "human-password-that-should-be-derived".to_string().into(),
+//!     salt: "unique-salt".to_string().into(),
+//! };
+//!
+//! // Encrypt a user's diary.
+//! let mut user = User {
+//!     diary: EncryptedMessage::encrypt_with_key_config("Very personal stuff".to_string(), &key_config).unwrap(),
+//! };
+//!
+//! // Decrypt the user's diary.
+//! let decrypted: String = user.diary.decrypt_with_key_config(&key_config).unwrap();
+//!
+//! // Update the user's diary using the same encryption type & key config.
+//! user.diary = user.diary.with_new_payload_and_key_config("More personal stuff".to_string(), &key_config).unwrap();
+//! ```
+//!
+//! # Integration with Diesel
+//!
+//! [`EncryptedMessage`] implements [`FromSql`](diesel::deserialize::FromSql) & [`ToSql`](diesel::serialize::ToSql),
+//! allowing you to use `EncryptedMessage` as a field type in your models.
+//!
+//! - **MySQL**: Enable the `diesel` & `diesel-mysql` features. Supports the [`Json`](diesel::sql_types::Json) type.
+//! - **PostgreSQL**: Enable the `diesel` & `diesel-postgres` features. Supports the [`Json`](diesel::sql_types::Json) & [`Jsonb`](diesel::sql_types::Jsonb) types.
 
 pub mod encryption_type;
 use encryption_type::EncryptionType;
@@ -8,6 +171,9 @@ pub mod error;
 pub use error::{EncryptionError, DecryptionError};
 
 mod integrations;
+
+pub mod key_config;
+pub use key_config::KeyConfig;
 
 pub mod utilities;
 use utilities::base64;

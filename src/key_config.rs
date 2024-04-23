@@ -1,13 +1,11 @@
+//! Contains the [`KeyConfig`] trait used to define a key configuration to use with [`EncryptedMessage`](crate::EncryptedMessage).
+
 use std::fmt::Debug;
 
 pub use secrecy::Secret;
 
 /// A trait to define a key configuration to use with [`EncryptedMessage`](crate::EncryptedMessage).
-///
 /// This allows you to effectively define different keys for different kinds of data if needed.
-///
-/// It's recommended to use different implementations for [`Deterministic`](crate::encryption_type::Deterministic)
-/// & [`Randomized`](crate::encryption_type::Randomized) with different keys.
 pub trait KeyConfig: Debug {
     /// Returns a list of keys to use for encryption.
     ///

@@ -1,3 +1,5 @@
+//! Key decoders for various formats.
+
 use secrecy::{SecretString, Secret, ExposeSecret as _};
 
 use super::base64;
@@ -22,12 +24,12 @@ impl Base64KeyDecoder {
     }
 }
 
-/// Hex key decoder.
+/// Hexadecimal key decoder.
 pub struct HexKeyDecoder;
 impl HexKeyDecoder {
-    /// Decodes a list of hex-encoded keys.
+    /// Decodes a list of hexadecimal-encoded keys.
     ///
-    /// Panics if any of the keys are not valid hex, or if a decoded key is not 32 bytes long.
+    /// Panics if any of the keys are not valid hexadecimal, or if a decoded key is not 32 bytes long.
     pub fn decode_keys(keys: Vec<SecretString>) -> Vec<Secret<[u8; 32]>> {
         keys.iter()
             .map(|hex_key| {
