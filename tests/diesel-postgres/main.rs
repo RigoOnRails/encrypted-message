@@ -7,7 +7,7 @@ use encrypted_message::{
     EncryptedMessage,
     strategy::{Randomized, Deterministic},
     key_config::Secret,
-    utilities::key_decoder::HexKeyDecoder,
+    utilities::key_decoder::{KeyDecoder as _, HexKeyDecoder},
 };
 
 #[derive(Debug, Default)]

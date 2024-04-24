@@ -1,4 +1,7 @@
-use crate::{key_config::{KeyConfig, Secret}, utilities::key_decoder::HexKeyDecoder};
+use crate::{
+    key_config::{KeyConfig, Secret},
+    utilities::key_decoder::{KeyDecoder as _, HexKeyDecoder},
+};
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct TestKeyConfig;

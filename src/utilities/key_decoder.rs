@@ -4,17 +4,21 @@ use secrecy::{SecretString, Secret, ExposeSecret as _};
 
 use super::base64;
 
-trait KeyDecoder {
+/// Trait for implementing key decoders.
+pub trait KeyDecoder {
+    /// Decodes a list of keys encoded in some format.
+    ///
+    /// Should panic if any of the keys are not correctly encoded, or if a decoded key is not 32 bytes long.
     fn decode_keys(keys: Vec<SecretString>) -> Vec<Secret<[u8; 32]>>;
 }
 
 /// Base64 key decoder.
 pub struct Base64KeyDecoder;
-impl Base64KeyDecoder {
+impl KeyDecoder for Base64KeyDecoder {
     /// Decodes a list of base64-encoded keys.
     ///
     /// Panics if any of the keys are not valid base64, or if a decoded key is not 32 bytes long.
-    pub fn decode_keys(keys: Vec<SecretString>) -> Vec<Secret<[u8; 32]>> {
+    fn decode_keys(keys: Vec<SecretString>) -> Vec<Secret<[u8; 32]>> {
         keys.iter()
             .map(|base64_key| {
                 let key: [u8; 32] = base64::decode(base64_key.expose_secret()).unwrap().try_into().unwrap();
@@ -26,11 +30,11 @@ impl Base64KeyDecoder {
 
 /// Hexadecimal key decoder.
 pub struct HexKeyDecoder;
-impl HexKeyDecoder {
+impl KeyDecoder for HexKeyDecoder {
     /// Decodes a list of hexadecimal-encoded keys.
     ///
     /// Panics if any of the keys are not valid hexadecimal, or if a decoded key is not 32 bytes long.
-    pub fn decode_keys(keys: Vec<SecretString>) -> Vec<Secret<[u8; 32]>> {
+    fn decode_keys(keys: Vec<SecretString>) -> Vec<Secret<[u8; 32]>> {
         keys.iter()
             .map(|hex_key| {
                 let mut key = [0; 32];

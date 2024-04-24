@@ -16,7 +16,7 @@
 //! ```
 //! use encrypted_message::{
 //!     key_config::Secret,
-//!     utilities::key_decoder::HexKeyDecoder,
+//!     utilities::key_decoder::{KeyDecoder as _, HexKeyDecoder},
 //! };
 //!
 //! #[derive(Debug, Default)]
@@ -57,7 +57,7 @@
 //! ```
 //! # use encrypted_message::{
 //! #     key_config::Secret,
-//! #     utilities::key_decoder::HexKeyDecoder,
+//! #     utilities::key_decoder::{KeyDecoder as _, HexKeyDecoder},
 //! # };
 //! #
 //! # #[derive(Debug, Default)]
@@ -83,7 +83,7 @@
 //! #     EncryptedMessage,
 //! #     key_config::Secret,
 //! #     strategy::Randomized,
-//! #     utilities::key_decoder::HexKeyDecoder,
+//! #     utilities::key_decoder::{KeyDecoder as _, HexKeyDecoder},
 //! # };
 //! #
 //! # #[derive(Debug, Default)]
