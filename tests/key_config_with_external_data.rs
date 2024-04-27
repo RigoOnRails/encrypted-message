@@ -1,10 +1,11 @@
 use encrypted_message::{
     EncryptedMessage,
     strategy::Randomized,
-    key_config::Secret,
-    utilities::key_generation::derive_key_from,
+    key_config::{KeyConfig, Secret},
 };
+use pbkdf2::pbkdf2_hmac_array;
 use secrecy::{ExposeSecret as _, SecretString};
+use sha2::Sha256;
 
 #[derive(Debug)]
 struct UserKeyConfig {
@@ -12,11 +13,13 @@ struct UserKeyConfig {
     salt: SecretString,
 }
 
-impl encrypted_message::KeyConfig for UserKeyConfig {
+impl KeyConfig for UserKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let raw_key = self.user_password.expose_secret().as_bytes();
         let salt = self.salt.expose_secret().as_bytes();
-        vec![derive_key_from(raw_key, salt, 2_u32.pow(16))]
+        let derived_key = pbkdf2_hmac_array::<Sha256, 32>(raw_key, salt, 2_u32.pow(16)).into();
+
+        vec![derived_key]
     }
 }
 

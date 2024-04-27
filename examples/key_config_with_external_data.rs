@@ -4,10 +4,11 @@
 use encrypted_message::{
     EncryptedMessage,
     strategy::Randomized,
-    key_config::Secret,
-    utilities::key_generation::derive_key_from,
+    key_config::{KeyConfig, Secret},
 };
+use pbkdf2::pbkdf2_hmac_array;
 use secrecy::{ExposeSecret as _, SecretString};
+use sha2::Sha256;
 
 /// NOTE: When depending on human-provided keys/passwords, ensure you derive them
 /// using [`derive_key_from`]. Using a human-provided key directly is not secure as they're likely to be weak.
@@ -19,16 +20,14 @@ struct UserKeyConfig {
     salt: SecretString,
 }
 
-impl encrypted_message::KeyConfig for UserKeyConfig {
+impl KeyConfig for UserKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let raw_key = self.user_password.expose_secret().as_bytes();
         let salt = self.salt.expose_secret().as_bytes();
-        vec![derive_key_from(raw_key, salt, 2_u32.pow(16))]
-    }
-}
+        let derived_key = pbkdf2_hmac_array::<Sha256, 32>(raw_key, salt, 2_u32.pow(16)).into();
 
-struct User {
-    diary: EncryptedMessage<String, Randomized, UserKeyConfig>,
+        vec![derived_key]
+    }
 }
 
 fn main() {
@@ -38,12 +37,12 @@ fn main() {
     };
 
     // Encrypt a user's diary.
-    let mut user = User {
-        diary: EncryptedMessage::encrypt_with_key_config("Very personal stuff".to_string(), &key_config).unwrap(),
+    let diary: EncryptedMessage::<String, Randomized, UserKeyConfig> = {
+        EncryptedMessage::encrypt_with_key_config("Very personal stuff".to_string(), &key_config).unwrap()
     };
-    println!("Encrypted diary: {:#?}", user.diary);
+    println!("Encrypted diary: {diary:#?}");
 
     // Decrypt the user's diary.
-    let decrypted = user.diary.decrypt_with_key_config(&key_config).unwrap();
+    let decrypted = diary.decrypt_with_key_config(&key_config).unwrap();
     println!("Decrypted diary: {decrypted}");
 }

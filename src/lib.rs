@@ -175,7 +175,7 @@ mod integrations;
 pub mod key_config;
 pub use key_config::KeyConfig;
 
-pub mod utilities;
+mod utilities;
 use utilities::base64;
 
 #[cfg(test)]

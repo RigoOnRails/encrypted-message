@@ -15,7 +15,6 @@ aes-gcm = "0.10.3"
 base64 = "0.22.0"
 diesel = { version = "2.1.5", optional = true, features = ["serde_json"] }
 hmac = "0.12.1"
-pbkdf2 = "0.12.2"
 rand = "0.8.5"
 secrecy = "0.8.0"
 serde = { version = "1.0.197", features = ["derive"] }
@@ -32,6 +31,7 @@ diesel-postgres = ["diesel/postgres"]
 criterion = { version = "0.5.1", features = ["html_reports"] }
 dotenvy = "0.15.7"
 hex = "0.4.3"
+pbkdf2 = "0.12.2"
 uuid = { version = "1.8.0", features = ["v4"] }
 
 [profile.dev.package.sha2]
