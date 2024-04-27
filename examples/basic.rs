@@ -4,39 +4,34 @@
 use encrypted_message::{
     EncryptedMessage,
     strategy::Randomized,
-    key_config::Secret,
-    utilities::key_decoder::{KeyDecoder as _, HexKeyDecoder},
+    key_config::{KeyConfig, Secret, ExposeSecret as _},
 };
 
 /// NOTE: Never hardcode your keys like this, obviously.
 #[derive(Debug, Default)]
-struct KeyConfig;
-impl encrypted_message::KeyConfig for KeyConfig {
+struct AppKeyConfig;
+impl KeyConfig for AppKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
-        HexKeyDecoder::decode_keys(vec![String::from("75754f7866705767526749456f33644972646f30686e484a484631686e747657").into()])
-    }
-}
+        let encoded_keys = [Secret::new("75754f7866705767526749456f33644972646f30686e484a484631686e747657".to_string())];
+        encoded_keys.iter()
+            .map(|hex_key| {
+                let mut key = [0; 32];
+                hex::decode_to_slice(hex_key.expose_secret(), &mut key).unwrap();
 
-struct User {
-    diary: EncryptedMessage<String, Randomized, KeyConfig>,
+                key.into()
+            })
+            .collect()
+    }
 }
 
 fn main() {
     // Encrypt a user's diary.
-    let mut user = User {
-        diary: EncryptedMessage::encrypt("Very personal stuff".to_string()).unwrap(),
+    let diary: EncryptedMessage::<String, Randomized, AppKeyConfig> = {
+        EncryptedMessage::encrypt("Very personal stuff".to_string()).unwrap()
     };
-    println!("Encrypted diary: {:#?}", user.diary);
+    println!("Encrypted diary: {diary:#?}");
 
     // Decrypt the user's diary.
-    let decrypted = user.diary.decrypt().unwrap();
+    let decrypted = diary.decrypt().unwrap();
     println!("Decrypted diary: {decrypted}");
-
-    // Update the user's diary using the same encryption strategy & key config.
-    user.diary = user.diary.with_new_payload("More personal stuff".to_string()).unwrap();
-    println!("New encrypted diary: {:#?}", user.diary);
-
-    // Decrypt the updated diary.
-    let decrypted = user.diary.decrypt().unwrap();
-    println!("New decrypted diary: {decrypted}");
 }

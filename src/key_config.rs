@@ -2,7 +2,7 @@
 
 use std::fmt::Debug;
 
-pub use secrecy::Secret;
+pub use secrecy::{Secret, ExposeSecret};
 
 /// A trait to define a key configuration to use with [`EncryptedMessage`](crate::EncryptedMessage).
 /// This allows you to effectively define different keys for different kinds of data if needed.
@@ -26,8 +26,6 @@ pub trait KeyConfig: Debug {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use secrecy::ExposeSecret as _;
 
     use crate::testing::TestKeyConfig;
 

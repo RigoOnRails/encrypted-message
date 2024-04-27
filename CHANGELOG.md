@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Re-export `secrecy::ExposeSecret` in the `key_config` module.
+
 ### Changed
 
-- Breaking: Implement the `KeyDecoder` trait for the `HexKeyDecoder` & `Base64KeyDecoder` structs.
-  Using the key decoders now requires importing the `KeyDecoder` trait.
+### Removed
+- Removed the `utilities::key_decoder` module, as it's out of scope for this library.
 
 ## [0.2.0] - 2024-04-23
 
