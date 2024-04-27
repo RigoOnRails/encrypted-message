@@ -11,7 +11,7 @@ use serde::{Serialize, de::DeserializeOwned};
 use crate::{EncryptedMessage, Strategy, key_config::KeyConfig};
 
 macro_rules! impl_from_and_to_sql {
-    ($($sql_type:ty, $backend:ty),+) => {
+    ($($sql_type:ty, $backend:ty),+ $(,)?) => {
         $(
             impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, K: KeyConfig> FromSql<$sql_type, $backend> for EncryptedMessage<P, S, K> {
                 fn from_sql(value: <$backend as Backend>::RawValue<'_>) -> diesel::deserialize::Result<Self> {
@@ -38,5 +38,5 @@ impl_from_and_to_sql!(sql_types::Json, diesel::mysql::Mysql);
 #[cfg(feature = "diesel-postgres")]
 impl_from_and_to_sql!(
     sql_types::Json, diesel::pg::Pg,
-    sql_types::Jsonb, diesel::pg::Pg
+    sql_types::Jsonb, diesel::pg::Pg,
 );
