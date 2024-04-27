@@ -62,17 +62,4 @@ fn encrypted_message_works() {
     // Decrypt the user's secrets.
     assert_eq!(user.json.as_ref().unwrap().decrypt().unwrap(), "Very secret.");
     assert_eq!(user.jsonb.as_ref().unwrap().decrypt().unwrap(), "Very secret, also binary.");
-
-    // Update the user's secrets.
-    let user: User = diesel::update(schema::users::table.find(user.id))
-        .set(UserChangeset {
-            json: Some(Some(user.json.unwrap().with_new_payload("New secret.".to_string()).unwrap())),
-            jsonb: Some(Some(user.jsonb.unwrap().with_new_payload("New secret, still very much binary.".to_string()).unwrap())),
-        })
-        .get_result(&mut connection)
-        .unwrap();
-
-    // Decrypt the user's secrets.
-    assert_eq!(user.json.unwrap().decrypt().unwrap(), "New secret.");
-    assert_eq!(user.jsonb.as_ref().unwrap().decrypt().unwrap(), "New secret, still very much binary.");
 }

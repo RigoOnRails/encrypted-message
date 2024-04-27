@@ -282,14 +282,6 @@ impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, K: KeyConfig> Encrypt
 
         Err(DecryptionError::Decryption)
     }
-
-    /// Consumes the [`EncryptedMessage`] & returns a new one with
-    /// the same encryption strategy, but with a new encrypted payload.
-    ///
-    /// See [`EncryptedMessage::encrypt_with_key_config`] for more information.
-    pub fn with_new_payload_and_key_config(self, payload: P, key_config: &K) -> Result<Self, EncryptionError> {
-        Self::encrypt_with_key_config(payload, key_config)
-    }
 }
 
 impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, K: KeyConfig + Default> EncryptedMessage<P, S, K> {
@@ -303,12 +295,6 @@ impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, K: KeyConfig + Defaul
     /// passing `&K::default()` as the key configuration.
     pub fn decrypt(&self) -> Result<P, DecryptionError> {
         self.decrypt_with_key_config(&K::default())
-    }
-
-    /// This method is a shorthand for [`EncryptedMessage::with_new_payload_and_key_config`],
-    /// passing `&K::default()` as the key configuration.
-    pub fn with_new_payload(self, payload: P) -> Result<Self, EncryptionError> {
-        self.with_new_payload_and_key_config(payload, &K::default())
     }
 }
 
@@ -426,19 +412,6 @@ mod tests {
 
             assert!(matches!(message.decrypt().unwrap_err(), DecryptionError::Deserialization(_)));
         }
-    }
-
-    #[test]
-    fn test_with_new_payload() {
-        let message = EncryptedMessage::<String, Deterministic, TestKeyConfig>::encrypt("bonjour".to_string()).unwrap();
-        let encrypted_payload = message.payload.clone();
-
-        let new_message = message.with_new_payload("hola".to_string()).unwrap();
-        let new_encrypted_payload = new_message.payload;
-
-        assert_eq!(new_message.payload_type, PhantomData::<String>);
-        assert_eq!(new_message.strategy, PhantomData::<Deterministic>);
-        assert_ne!(encrypted_payload, new_encrypted_payload);
     }
 
     #[test]

@@ -46,12 +46,4 @@ fn main() {
     // Decrypt the user's diary.
     let decrypted = user.diary.decrypt_with_key_config(&key_config).unwrap();
     println!("Decrypted diary: {decrypted}");
-
-    // Update the user's diary using the same encryption strategy & key config.
-    user.diary = user.diary.with_new_payload_and_key_config("More personal stuff".to_string(), &key_config).unwrap();
-    println!("New encrypted diary: {:#?}", user.diary);
-
-    // Decrypt the updated diary.
-    let decrypted = user.diary.decrypt_with_key_config(&key_config).unwrap();
-    println!("New decrypted diary: {decrypted}");
 }

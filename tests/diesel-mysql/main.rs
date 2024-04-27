@@ -64,18 +64,4 @@ fn encrypted_message_works() {
 
     // Decrypt the user's secrets.
     assert_eq!(user.json.as_ref().unwrap().decrypt().unwrap(), "Very secret.");
-
-    // Update the user's secrets.
-    diesel::update(schema::users::table.find(&id))
-        .set(UserChangeset {
-            json: Some(Some(user.json.unwrap().with_new_payload("New secret.".to_string()).unwrap())),
-        })
-        .execute(&mut connection)
-        .unwrap();
-
-    // Load the updated user from the database.
-    let user: User = schema::users::table.find(&id).first(&mut connection).unwrap();
-
-    // Decrypt the user's secrets.
-    assert_eq!(user.json.unwrap().decrypt().unwrap(), "New secret.");
 }
