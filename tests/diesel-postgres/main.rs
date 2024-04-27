@@ -6,12 +6,12 @@ use diesel::prelude::*;
 use encrypted_message::{
     EncryptedMessage,
     strategy::{Randomized, Deterministic},
-    key_config::Secret,
+    key_config::{KeyConfig, Secret},
 };
 
 #[derive(Debug, Default)]
-struct KeyConfig;
-impl encrypted_message::KeyConfig for KeyConfig {
+struct AppKeyConfig;
+impl KeyConfig for AppKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         vec![(*b"uuOxfpWgRgIEo3dIrdo0hnHJHF1hntvW").into()]
     }
@@ -21,25 +21,26 @@ impl encrypted_message::KeyConfig for KeyConfig {
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 struct User {
+    #[allow(dead_code)]
     id: i32,
-    json: Option<EncryptedMessage<String, Randomized, KeyConfig>>,
-    jsonb: Option<EncryptedMessage<String, Deterministic, KeyConfig>>,
+    json: Option<EncryptedMessage<String, Randomized, AppKeyConfig>>,
+    jsonb: Option<EncryptedMessage<String, Deterministic, AppKeyConfig>>,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 struct UserInsertable {
-    json: Option<EncryptedMessage<String, Randomized, KeyConfig>>,
-    jsonb: Option<EncryptedMessage<String, Deterministic, KeyConfig>>,
+    json: Option<EncryptedMessage<String, Randomized, AppKeyConfig>>,
+    jsonb: Option<EncryptedMessage<String, Deterministic, AppKeyConfig>>,
 }
 
 #[derive(AsChangeset)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 struct UserChangeset {
-    json: Option<Option<EncryptedMessage<String, Randomized, KeyConfig>>>,
-    jsonb: Option<Option<EncryptedMessage<String, Deterministic, KeyConfig>>>,
+    json: Option<Option<EncryptedMessage<String, Randomized, AppKeyConfig>>>,
+    jsonb: Option<Option<EncryptedMessage<String, Deterministic, AppKeyConfig>>>,
 }
 
 #[test]

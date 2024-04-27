@@ -54,7 +54,7 @@ mod tests {
 
     use secrecy::ExposeSecret as _;
 
-    use crate::{KeyConfig, utilities::base64, testing::TestKeyConfig};
+    use crate::{key_config::KeyConfig as _, utilities::base64, testing::TestKeyConfig};
 
     mod deterministic {
         use super::*;

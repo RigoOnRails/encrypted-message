@@ -8,7 +8,7 @@ use diesel::{
 };
 use serde::{Serialize, de::DeserializeOwned};
 
-use crate::{EncryptedMessage, Strategy, KeyConfig};
+use crate::{EncryptedMessage, Strategy, key_config::KeyConfig};
 
 macro_rules! impl_from_and_to_sql {
     ($($sql_type:ty, $backend:ty),+) => {

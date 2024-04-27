@@ -6,12 +6,12 @@ use diesel::prelude::*;
 use encrypted_message::{
     EncryptedMessage,
     strategy::Randomized,
-    key_config::Secret,
+    key_config::{KeyConfig, Secret},
 };
 
 #[derive(Debug, Default)]
-struct KeyConfig;
-impl encrypted_message::KeyConfig for KeyConfig {
+struct AppKeyConfig;
+impl KeyConfig for AppKeyConfig {
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         vec![(*b"uuOxfpWgRgIEo3dIrdo0hnHJHF1hntvW").into()]
     }
@@ -23,7 +23,7 @@ impl encrypted_message::KeyConfig for KeyConfig {
 struct User {
     #[allow(dead_code)]
     id: String,
-    json: Option<EncryptedMessage<String, Randomized, KeyConfig>>,
+    json: Option<EncryptedMessage<String, Randomized, AppKeyConfig>>,
 }
 
 #[derive(Insertable)]
@@ -31,14 +31,14 @@ struct User {
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
 struct UserInsertable {
     id: String,
-    json: Option<EncryptedMessage<String, Randomized, KeyConfig>>,
+    json: Option<EncryptedMessage<String, Randomized, AppKeyConfig>>,
 }
 
 #[derive(AsChangeset)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
 struct UserChangeset {
-    json: Option<Option<EncryptedMessage<String, Randomized, KeyConfig>>>,
+    json: Option<Option<EncryptedMessage<String, Randomized, AppKeyConfig>>>,
 }
 
 #[test]

@@ -173,7 +173,7 @@ pub use error::{EncryptionError, DecryptionError};
 mod integrations;
 
 pub mod key_config;
-pub use key_config::KeyConfig;
+use key_config::KeyConfig;
 
 mod utilities;
 use utilities::base64;
