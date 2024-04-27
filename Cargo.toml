@@ -34,9 +34,6 @@ hex = "0.4.3"
 pbkdf2 = "0.12.2"
 uuid = { version = "1.8.0", features = ["v4"] }
 
-[profile.dev.package.sha2]
-opt-level = 1
-
 [[bench]]
 name = "encrypted_message"
 harness = false
