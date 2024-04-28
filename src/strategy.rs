@@ -14,7 +14,7 @@ mod private {
 
 pub trait Strategy: private::Sealed + Debug {
     /// Generates a 96-bit nonce to encrypt a payload.
-    fn generate_nonce_for(payload: &[u8], key: &[u8]) -> [u8; 12];
+    fn generate_nonce_for(payload: &[u8], key: &[u8; 32]) -> [u8; 12];
 }
 
 /// This encryption strategy is guaranteed to always produce the same nonce for a payload,
@@ -26,7 +26,7 @@ pub trait Strategy: private::Sealed + Debug {
 pub struct Deterministic;
 impl Strategy for Deterministic {
     /// Generates a deterministic 96-bit nonce for the payload.
-    fn generate_nonce_for(payload: &[u8], key: &[u8]) -> [u8; 12] {
+    fn generate_nonce_for(payload: &[u8], key: &[u8; 32]) -> [u8; 12] {
         let mut mac = Hmac::<Sha256>::new_from_slice(key).unwrap();
         mac.update(payload);
 
@@ -43,7 +43,7 @@ impl Strategy for Deterministic {
 pub struct Randomized;
 impl Strategy for Randomized {
     /// Generates a random 96-bit nonce for the payload.
-    fn generate_nonce_for(_payload: &[u8], _key: &[u8]) -> [u8; 12] {
+    fn generate_nonce_for(_payload: &[u8], _key: &[u8; 32]) -> [u8; 12] {
         rand::random()
     }
 }
