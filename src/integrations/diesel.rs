@@ -8,12 +8,12 @@ use diesel::{
 };
 use serde::{Serialize, de::DeserializeOwned};
 
-use crate::{EncryptedMessage, Strategy, config::Config};
+use crate::{EncryptedMessage, config::Config};
 
 macro_rules! impl_from_and_to_sql {
     ($($sql_type:ty, $backend:ty),+ $(,)?) => {
         $(
-            impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, C: Config> FromSql<$sql_type, $backend> for EncryptedMessage<P, S, C> {
+            impl<P: Debug + DeserializeOwned + Serialize, C: Config> FromSql<$sql_type, $backend> for EncryptedMessage<P, C> {
                 fn from_sql(value: <$backend as Backend>::RawValue<'_>) -> diesel::deserialize::Result<Self> {
                     let json: serde_json::Value = FromSql::<$sql_type, $backend>::from_sql(value)?;
 
@@ -21,7 +21,7 @@ macro_rules! impl_from_and_to_sql {
                 }
             }
 
-            impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, C: Config> ToSql<$sql_type, $backend> for EncryptedMessage<P, S, C> {
+            impl<P: Debug + DeserializeOwned + Serialize, C: Config> ToSql<$sql_type, $backend> for EncryptedMessage<P, C> {
                 fn to_sql<'b>(&'b self, out: &mut diesel::serialize::Output<'b, '_, $backend>) -> diesel::serialize::Result {
                     let json = serde_json::to_value(self)?;
 

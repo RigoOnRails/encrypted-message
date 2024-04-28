@@ -19,6 +19,8 @@ struct UserEncryptionConfig {
 }
 
 impl Config for UserEncryptionConfig {
+    type Strategy = Randomized;
+
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let raw_key = self.user_password.expose_secret().as_bytes();
         let salt = self.salt.expose_secret().as_bytes();
@@ -35,7 +37,7 @@ fn main() {
     };
 
     // Encrypt a user's diary.
-    let diary: EncryptedMessage::<String, Randomized, UserEncryptionConfig> = {
+    let diary: EncryptedMessage::<String, UserEncryptionConfig> = {
         EncryptedMessage::encrypt_with_config("Very personal stuff".to_string(), &config).unwrap()
     };
     println!("Encrypted diary: {diary:#?}");

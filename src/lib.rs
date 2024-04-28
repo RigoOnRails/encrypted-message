@@ -1,20 +1,23 @@
-#![doc = include_str!("../README.md")]
-
-//! # Configuration
+//! ## Configuration
 //!
-//! First, you need to create a configuration that implements the [`Config`] trait.
-//! If your configuration implements the [`Default`] trait, you can use the shorthand methods
+//! First, you'll need to create a configuration type by implementing the [`Config`] trait.
+//! If your configuration type implements the [`Default`] trait, you can use the shorthand methods
 //! of the [`EncryptedMessage`] struct.
 //!
 //! The first key provided is considered the primary key, & is always used to encrypt new payloads.
 //! The following keys are used in the order provided when the primary key can't decrypt a payload. This allows you to rotate keys.
 //!
 //! ```
-//! use encrypted_message::config::{Config, Secret, ExposeSecret as _};
+//! use encrypted_message::{
+//!     config::{Config, Secret, ExposeSecret as _},
+//!     strategy::Randomized,
+//! };
 //!
 //! #[derive(Debug, Default)]
 //! struct EncryptionConfig;
 //! impl Config for EncryptionConfig {
+//!     type Strategy = Randomized;
+//!
 //!     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
 //!         std::env::var("ENCRYPTION_KEYS").unwrap()
 //!             .split(", ")
@@ -35,7 +38,7 @@
 //! openssl rand -hex 32
 //! ```
 //!
-//! # Encryption strategies
+//! ## Encryption strategies
 //!
 //! Two encryption strategies are provided, [`Deterministic`](crate::strategy::Deterministic) & [`Randomized`](crate::strategy::Randomized).
 //!
@@ -44,30 +47,32 @@
 //!
 //! It's recommended to use different keys for each encryption strategy.
 //!
-//! # Defining encrypted fields
+//! ## Defining encrypted fields
 //!
 //! You can now define your encrypted fields using the [`EncryptedMessage`] struct.
-//! The first type parameter is the payload type, the second is the encryption strategy, & the third is the configuration type.
+//! The first type parameter is the payload type, & the second is the configuration type.
 //!
 //! ```
-//! # use encrypted_message::config::{Config, Secret};
+//! # use encrypted_message::{config::{Config, Secret}, strategy::Randomized};
 //! #
 //! # #[derive(Debug, Default)]
 //! # struct EncryptionConfig;
 //! # impl Config for EncryptionConfig {
+//! #     type Strategy = Randomized;
+//! #
 //! #     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
 //! #         vec![(*b"uuOxfpWgRgIEo3dIrdo0hnHJHF1hntvW").into()]
 //! #     }
 //! # }
 //! #
-//! use encrypted_message::{EncryptedMessage, strategy::Randomized};
+//! use encrypted_message::EncryptedMessage;
 //!
 //! struct User {
-//!     diary: EncryptedMessage<String, Randomized, EncryptionConfig>,
+//!     diary: EncryptedMessage<String, EncryptionConfig>,
 //! }
 //! ```
 //!
-//! # Encrypting & decrypting payloads
+//! ## Encrypting & decrypting payloads
 //!
 //! If your [`Config`] implements the [`Default`] trait (like above), you can use the shorthand methods:
 //! ```
@@ -80,17 +85,19 @@
 //! # #[derive(Debug, Default)]
 //! # struct EncryptionConfig;
 //! # impl Config for EncryptionConfig {
+//! #     type Strategy = Randomized;
+//! #
 //! #     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
 //! #         vec![(*b"uuOxfpWgRgIEo3dIrdo0hnHJHF1hntvW").into()]
 //! #     }
 //! # }
 //! #
 //! # struct User {
-//! #     diary: EncryptedMessage<String, Randomized, EncryptionConfig>,
+//! #     diary: EncryptedMessage<String, EncryptionConfig>,
 //! # }
 //! #
 //! // Encrypt a user's diary.
-//! let mut user = User {
+//! let user = User {
 //!     diary: EncryptedMessage::encrypt("Very personal stuff".to_string()).unwrap(),
 //! };
 //!
@@ -115,6 +122,8 @@
 //! }
 //!
 //! impl Config for UserEncryptionConfig {
+//!     type Strategy = Randomized;
+//!
 //!     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
 //!         let raw_key = self.user_password.expose_secret().as_bytes();
 //!         let salt = self.salt.expose_secret().as_bytes();
@@ -123,7 +132,7 @@
 //! }
 //!
 //! struct User {
-//!     diary: EncryptedMessage<String, Randomized, UserEncryptionConfig>,
+//!     diary: EncryptedMessage<String, UserEncryptionConfig>,
 //! }
 //!
 //! // Define the user's encryption configuration.
@@ -133,7 +142,7 @@
 //! };
 //!
 //! // Encrypt a user's diary.
-//! let mut user = User {
+//! let user = User {
 //!     diary: EncryptedMessage::encrypt_with_config("Very personal stuff".to_string(), &config).unwrap(),
 //! };
 //!
@@ -171,7 +180,7 @@ use secrecy::ExposeSecret as _;
 #[cfg_attr(feature = "diesel", derive(diesel::AsExpression, diesel::FromSqlRow))]
 #[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Json))]
 #[cfg_attr(all(feature = "diesel", feature = "diesel-postgres"), diesel(sql_type = diesel::sql_types::Jsonb))]
-pub struct EncryptedMessage<P: Debug + DeserializeOwned + Serialize, S: Strategy, C: Config> {
+pub struct EncryptedMessage<P: Debug + DeserializeOwned + Serialize, C: Config> {
     /// The base64-encoded & encrypted payload.
     #[serde(rename = "p")]
     payload: String,
@@ -183,10 +192,6 @@ pub struct EncryptedMessage<P: Debug + DeserializeOwned + Serialize, S: Strategy
     /// The payload type.
     #[serde(skip)]
     payload_type: PhantomData<P>,
-
-    /// The encryption strategy used to encrypt the payload.
-    #[serde(skip)]
-    strategy: PhantomData<S>,
 
     /// The configuration for the encrypted message.
     #[serde(skip)]
@@ -204,7 +209,7 @@ struct EncryptedMessageHeaders {
     tag: String,
 }
 
-impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, C: Config> EncryptedMessage<P, S, C> {
+impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> {
     /// Creates an [`EncryptedMessage`] from a payload, using the AES-256-GCM encryption cipher.
     ///
     /// # Errors
@@ -215,7 +220,7 @@ impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, C: Config> EncryptedM
         let payload = serde_json::to_vec(&payload)?;
 
         let key = config.primary_key();
-        let nonce = S::generate_nonce_for(&payload, key.expose_secret());
+        let nonce = C::Strategy::generate_nonce_for(&payload, key.expose_secret());
         let cipher = Aes256Gcm::new_from_slice(key.expose_secret()).unwrap();
 
         let mut buffer = payload;
@@ -228,7 +233,6 @@ impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, C: Config> EncryptedM
                 tag: base64::encode(tag),
             },
             payload_type: PhantomData,
-            strategy: PhantomData,
             config: PhantomData,
         })
     }
@@ -261,7 +265,7 @@ impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, C: Config> EncryptedM
     }
 }
 
-impl<P: Debug + DeserializeOwned + Serialize, S: Strategy, C: Config + Default> EncryptedMessage<P, S, C> {
+impl<P: Debug + DeserializeOwned + Serialize, C: Config + Default> EncryptedMessage<P, C> {
     /// This method is a shorthand for [`EncryptedMessage::encrypt_with_config`],
     /// passing `&C::default()` as the configuration.
     pub fn encrypt(payload: P) -> Result<Self, EncryptionError> {
@@ -281,10 +285,7 @@ mod tests {
 
     use serde_json::json;
 
-    use crate::{
-        strategy::{Deterministic, Randomized},
-        testing::TestConfig,
-    };
+    use crate::testing::{TestConfigDeterministic, TestConfigRandomized};
 
     mod encrypt {
         use super::*;
@@ -292,7 +293,7 @@ mod tests {
         #[test]
         fn deterministic() {
             assert_eq!(
-                EncryptedMessage::<String, Deterministic, TestConfig>::encrypt("rigo does pretty codes".to_string()).unwrap(),
+                EncryptedMessage::<String, TestConfigDeterministic>::encrypt("rigo does pretty codes".to_string()).unwrap(),
                 EncryptedMessage {
                     payload: "K6FbTsR8lNt9osq7vfvpDl4gPOxaQUhH".to_string(),
                     headers: EncryptedMessageHeaders {
@@ -300,7 +301,6 @@ mod tests {
                         tag: "fdnw5HvNImSdBm0nTFiRFw==".to_string(),
                     },
                     payload_type: PhantomData,
-                    strategy: PhantomData,
                     config: PhantomData,
                 },
             );
@@ -312,8 +312,8 @@ mod tests {
 
             // Test that the encrypted messages never match, even when they contain the same payload.
             assert_ne!(
-                EncryptedMessage::<String, Randomized, TestConfig>::encrypt(payload.clone()).unwrap(),
-                EncryptedMessage::<String, Randomized, TestConfig>::encrypt(payload).unwrap(),
+                EncryptedMessage::<String, TestConfigRandomized>::encrypt(payload.clone()).unwrap(),
+                EncryptedMessage::<String, TestConfigRandomized>::encrypt(payload).unwrap(),
             );
         }
 
@@ -321,7 +321,7 @@ mod tests {
         fn test_serialization_error() {
             // A map with non-string keys can't be serialized into JSON.
             let map = std::collections::HashMap::<[u8; 2], String>::from([([1, 2], "Hi".to_string())]);
-            assert!(matches!(EncryptedMessage::<_, Deterministic, TestConfig>::encrypt(map).unwrap_err(), EncryptionError::Serialization(_)));
+            assert!(matches!(EncryptedMessage::<_, TestConfigDeterministic>::encrypt(map).unwrap_err(), EncryptionError::Serialization(_)));
         }
     }
 
@@ -331,13 +331,13 @@ mod tests {
         #[test]
         fn decrypts_correctly() {
             let payload = "hi :D".to_string();
-            let message = EncryptedMessage::<String, Deterministic, TestConfig>::encrypt(payload.clone()).unwrap();
+            let message = EncryptedMessage::<String, TestConfigDeterministic>::encrypt(payload.clone()).unwrap();
             assert_eq!(message.decrypt().unwrap(), payload);
         }
 
         #[test]
         fn test_base64_decoding_error() {
-            fn generate() -> EncryptedMessage<String, Deterministic, TestConfig> {
+            fn generate() -> EncryptedMessage<String, TestConfigDeterministic> {
                 EncryptedMessage::encrypt("hi :)".to_string()).unwrap()
             }
 
@@ -367,8 +367,7 @@ mod tests {
                     tag: "r/AdKM4Dp0YAr/7dzAqujw==".to_string(),
                 },
                 payload_type: PhantomData::<String>,
-                strategy: PhantomData::<Deterministic>,
-                config: PhantomData::<TestConfig>,
+                config: PhantomData::<TestConfigDeterministic>,
             };
 
             assert!(matches!(message.decrypt().unwrap_err(), DecryptionError::Decryption));
@@ -376,14 +375,13 @@ mod tests {
 
         #[test]
         fn test_deserialization_error() {
-            let message = EncryptedMessage::<String, Deterministic, TestConfig>::encrypt("hi :)".to_string()).unwrap();
+            let message = EncryptedMessage::<String, TestConfigDeterministic>::encrypt("hi :)".to_string()).unwrap();
 
             // Change the payload type to an integer, even though the initial payload was serialized as a string.
             let message = EncryptedMessage {
                 payload: message.payload,
                 headers: message.headers,
                 payload_type: PhantomData::<u8>,
-                strategy: message.strategy,
                 config: message.config,
             };
 
@@ -401,8 +399,7 @@ mod tests {
                 tag: "ZtAoub/4fB30QetW+O7oaA==".to_string(),
             },
             payload_type: PhantomData::<String>,
-            strategy: PhantomData::<Deterministic>,
-            config: PhantomData::<TestConfig>,
+            config: PhantomData::<TestConfigDeterministic>,
         };
 
         // Ensure that if encrypting the same value, it'll be different since it'll use the new primary key.
@@ -410,7 +407,7 @@ mod tests {
         // same if the key was the same.
         let expected_payload = "hi :)".to_string();
         assert_ne!(
-            EncryptedMessage::<String, Deterministic, TestConfig>::encrypt(expected_payload.clone()).unwrap(),
+            EncryptedMessage::<String, TestConfigDeterministic>::encrypt(expected_payload.clone()).unwrap(),
             message,
         );
 
@@ -420,41 +417,41 @@ mod tests {
 
     #[test]
     fn handles_empty_payload() {
-        let message = EncryptedMessage::<String, Deterministic, TestConfig>::encrypt("".to_string()).unwrap();
+        let message = EncryptedMessage::<String, TestConfigDeterministic>::encrypt("".to_string()).unwrap();
         assert_eq!(message.decrypt().unwrap(), "");
     }
 
     #[test]
     fn handles_json_types() {
         // Nullable values
-        let encrypted = EncryptedMessage::<Option<String>, Randomized, TestConfig>::encrypt(None).unwrap();
+        let encrypted = EncryptedMessage::<Option<String>, TestConfigRandomized>::encrypt(None).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), None);
 
-        let encrypted = EncryptedMessage::<Option<String>, Randomized, TestConfig>::encrypt(Some("rigo is cool".to_string())).unwrap();
+        let encrypted = EncryptedMessage::<Option<String>, TestConfigRandomized>::encrypt(Some("rigo is cool".to_string())).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), Some("rigo is cool".to_string()));
 
         // Boolean values
-        let encrypted = EncryptedMessage::<bool, Randomized, TestConfig>::encrypt(true).unwrap();
+        let encrypted = EncryptedMessage::<bool, TestConfigRandomized>::encrypt(true).unwrap();
         assert_eq!(encrypted.decrypt().unwrap() as u8, 1);
 
         // Integer values
-        let encrypted = EncryptedMessage::<u8, Randomized, TestConfig>::encrypt(255).unwrap();
+        let encrypted = EncryptedMessage::<u8, TestConfigRandomized>::encrypt(255).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), 255);
 
         // Float values
-        let encrypted = EncryptedMessage::<f64, Randomized, TestConfig>::encrypt(0.12345).unwrap();
+        let encrypted = EncryptedMessage::<f64, TestConfigRandomized>::encrypt(0.12345).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), 0.12345);
 
         // String values
-        let encrypted = EncryptedMessage::<String, Randomized, TestConfig>::encrypt("rigo is cool".to_string()).unwrap();
+        let encrypted = EncryptedMessage::<String, TestConfigRandomized>::encrypt("rigo is cool".to_string()).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), "rigo is cool");
 
         // Array values
-        let encrypted = EncryptedMessage::<Vec<u8>, Randomized, TestConfig>::encrypt(vec![1, 2, 3]).unwrap();
+        let encrypted = EncryptedMessage::<Vec<u8>, TestConfigRandomized>::encrypt(vec![1, 2, 3]).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), vec![1, 2, 3]);
 
         // Object values
-        let encrypted = EncryptedMessage::<serde_json::Value, Randomized, TestConfig>::encrypt(json!({ "a": 1, "b": "hello", "c": false })).unwrap();
+        let encrypted = EncryptedMessage::<serde_json::Value, TestConfigRandomized>::encrypt(json!({ "a": 1, "b": "hello", "c": false })).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), json!({ "a": 1, "b": "hello", "c": false }));
     }
 
@@ -467,8 +464,7 @@ mod tests {
                 tag: "S88wdO9tf/381mZQ88kMNw==".to_string(),
             },
             payload_type: PhantomData::<String>,
-            strategy: PhantomData::<Deterministic>,
-            config: PhantomData::<TestConfig>,
+            config: PhantomData::<TestConfigRandomized>,
         };
 
         // To JSON.
@@ -486,7 +482,7 @@ mod tests {
 
         // From JSON.
         assert_eq!(
-            serde_json::from_value::<EncryptedMessage::<_, _, _>>(message_json).unwrap(),
+            serde_json::from_value::<EncryptedMessage::<_, _>>(message_json).unwrap(),
             message,
         );
     }

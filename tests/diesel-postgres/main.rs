@@ -5,13 +5,15 @@ mod schema;
 use diesel::prelude::*;
 use encrypted_message::{
     EncryptedMessage,
-    strategy::{Randomized, Deterministic},
+    strategy::Randomized,
     config::{Config, Secret},
 };
 
 #[derive(Debug, Default)]
 struct EncryptionConfig;
 impl Config for EncryptionConfig {
+    type Strategy = Randomized;
+
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         vec![(*b"uuOxfpWgRgIEo3dIrdo0hnHJHF1hntvW").into()]
     }
@@ -23,24 +25,24 @@ impl Config for EncryptionConfig {
 struct User {
     #[allow(dead_code)]
     id: i32,
-    json: Option<EncryptedMessage<String, Randomized, EncryptionConfig>>,
-    jsonb: Option<EncryptedMessage<String, Deterministic, EncryptionConfig>>,
+    json: Option<EncryptedMessage<String, EncryptionConfig>>,
+    jsonb: Option<EncryptedMessage<String, EncryptionConfig>>,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 struct UserInsertable {
-    json: Option<EncryptedMessage<String, Randomized, EncryptionConfig>>,
-    jsonb: Option<EncryptedMessage<String, Deterministic, EncryptionConfig>>,
+    json: Option<EncryptedMessage<String, EncryptionConfig>>,
+    jsonb: Option<EncryptedMessage<String, EncryptionConfig>>,
 }
 
 #[derive(AsChangeset)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 struct UserChangeset {
-    json: Option<Option<EncryptedMessage<String, Randomized, EncryptionConfig>>>,
-    jsonb: Option<Option<EncryptedMessage<String, Deterministic, EncryptionConfig>>>,
+    json: Option<Option<EncryptedMessage<String, EncryptionConfig>>>,
+    jsonb: Option<Option<EncryptedMessage<String, EncryptionConfig>>>,
 }
 
 #[test]

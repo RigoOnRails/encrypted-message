@@ -11,6 +11,8 @@ use encrypted_message::{
 #[derive(Debug, Default)]
 struct EncryptionConfig;
 impl Config for EncryptionConfig {
+    type Strategy = Randomized;
+
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let encoded_keys = [Secret::new("75754f7866705767526749456f33644972646f30686e484a484631686e747657".to_string())];
         encoded_keys.iter()
@@ -26,7 +28,7 @@ impl Config for EncryptionConfig {
 
 fn main() {
     // Encrypt a user's diary.
-    let diary: EncryptedMessage::<String, Randomized, EncryptionConfig> = {
+    let diary: EncryptedMessage::<String, EncryptionConfig> = {
         EncryptedMessage::encrypt("Very personal stuff".to_string()).unwrap()
     };
     println!("Encrypted diary: {diary:#?}");

@@ -7,6 +7,8 @@ pub use secrecy::{Secret, ExposeSecret};
 /// A trait to define the configuration for an [`EncryptedMessage`](crate::EncryptedMessage).
 /// This allows you to effectively define different keys for different kinds of data if needed.
 pub trait Config: Debug {
+    type Strategy: crate::strategy::Strategy;
+
     /// Returns a list of keys to use for encryption.
     ///
     /// The first key is considered the primary key, & is always used for encryption.
@@ -27,7 +29,7 @@ pub trait Config: Debug {
 mod tests {
     use super::*;
 
-    use crate::testing::TestConfig;
+    use crate::testing::TestConfigRandomized as TestConfig;
 
     #[test]
     fn primary_key_returns_first_key() {

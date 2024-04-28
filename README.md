@@ -2,7 +2,7 @@
 [![crates.io](https://img.shields.io/crates/v/encrypted-message?logo=rust)](https://crates.io/crates/encrypted-message)
 [![docs.rs](https://img.shields.io/docsrs/encrypted-message?logo=docs.rs)](https://docs.rs/encrypted-message)
 [!["Lint & run tests" workflow](https://img.shields.io/github/actions/workflow/status/RigoOnRails/encrypted-message/development.yml?logo=github)](https://github.com/RigoOnRails/encrypted-message/actions/workflows/development.yml)
-[![License](https://img.shields.io/crates/l/encrypted-message)](LICENSE)
+[![License](https://img.shields.io/crates/l/encrypted-message)](./LICENSE)
 
 Safely encrypt & store serializable data using AES-256-GCM.
 
@@ -13,7 +13,7 @@ Safely encrypt & store serializable data using AES-256-GCM.
 encrypted-message = "0.2"
 ```
 
-# Integration with Diesel
+## Integration with Diesel
 
 `EncryptedMessage` implements [`FromSql`][diesel-fromsql] & [`ToSql`][diesel-tosql], allowing you to use `EncryptedMessage` as a field type in your models.
 
@@ -27,8 +27,8 @@ encrypted-message = { version = "0.2", features = ["diesel", "diesel-<mysql|post
 
 ## Examples
 
-- [`examples/basic.rs`](examples/basic.rs), a basic example of how to use `encrypted-message`.
-- [`examples/config_with_external_data.rs`](examples/config_with_external_data.rs), an example of a `Config` that depends on external data, like a user-provided key or password.
+- [`examples/basic.rs`](./examples/basic.rs), a basic example of how to use `encrypted-message`.
+- [`examples/config_with_external_data.rs`](./examples/config_with_external_data.rs), an example of a `Config` that depends on external data, like a user-provided key or password.
 
 ## Security
 

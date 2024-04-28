@@ -12,6 +12,8 @@ use encrypted_message::{
 #[derive(Debug, Default)]
 struct EncryptionConfig;
 impl Config for EncryptionConfig {
+    type Strategy = Randomized;
+
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         vec![(*b"uuOxfpWgRgIEo3dIrdo0hnHJHF1hntvW").into()]
     }
@@ -23,7 +25,7 @@ impl Config for EncryptionConfig {
 struct User {
     #[allow(dead_code)]
     id: String,
-    json: Option<EncryptedMessage<String, Randomized, EncryptionConfig>>,
+    json: Option<EncryptedMessage<String, EncryptionConfig>>,
 }
 
 #[derive(Insertable)]
@@ -31,14 +33,14 @@ struct User {
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
 struct UserInsertable {
     id: String,
-    json: Option<EncryptedMessage<String, Randomized, EncryptionConfig>>,
+    json: Option<EncryptedMessage<String, EncryptionConfig>>,
 }
 
 #[derive(AsChangeset)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::mysql::Mysql))]
 struct UserChangeset {
-    json: Option<Option<EncryptedMessage<String, Randomized, EncryptionConfig>>>,
+    json: Option<Option<EncryptedMessage<String, EncryptionConfig>>>,
 }
 
 #[test]

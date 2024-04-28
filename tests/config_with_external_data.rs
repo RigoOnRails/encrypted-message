@@ -13,6 +13,8 @@ struct UserEncryptionConfig {
 }
 
 impl Config for UserEncryptionConfig {
+    type Strategy = Randomized;
+
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
         let raw_key = self.user_password.expose_secret().as_bytes();
         let salt = self.salt.expose_secret().as_bytes();
@@ -30,7 +32,7 @@ fn config_with_external_data() {
     };
 
     // Encrypt a payload.
-    let encrypted: EncryptedMessage<String, Randomized, UserEncryptionConfig> = {
+    let encrypted: EncryptedMessage<String, UserEncryptionConfig> = {
         EncryptedMessage::encrypt_with_config("Hi".to_string(), &config).unwrap()
     };
 

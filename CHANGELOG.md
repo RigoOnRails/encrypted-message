@@ -12,11 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - `key_config::KeyConfig` has been moved to `config::Config` & is no longer exposed through `lib.rs`. You'll have to use the full path to reach it.
+- The encryption strategy is no longer configured on the `EncryptedMessage` itself, but rather inside its `Config` type.
 
 ### Removed
 - Removed the `utilities::key_decoder` module, as it's out of scope for this library.
 - Removed the `utilities::key_generation` module, as it's out of scope for this library.
-- Removed the `with_new_payload` & `with_new_payload_and_key_config` methods as they add no value.
+- Removed the `with_new_payload` & `with_new_payload_and_key_config` methods, as they add no value.
 
 ## [0.2.0] - 2024-04-23
 
