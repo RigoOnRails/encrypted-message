@@ -10,7 +10,7 @@ Safely encrypt & store serializable data using AES-256-GCM.
 
 ```toml
 [dependencies]
-encrypted-message = "0.2"
+encrypted-message = "0.3"
 ```
 
 ## Integration with Diesel
@@ -22,7 +22,7 @@ encrypted-message = "0.2"
 
 ```toml
 [dependencies]
-encrypted-message = { version = "0.2", features = ["diesel", "diesel-<mysql|postgres>"] }
+encrypted-message = { version = "0.3", features = ["diesel", "diesel-<mysql|postgres>"] }
 ```
 
 ## Examples
