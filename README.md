@@ -28,7 +28,7 @@ encrypted-message = { version = "0.2", features = ["diesel", "diesel-<mysql|post
 ## Examples
 
 - [`examples/basic.rs`](examples/basic.rs), a basic example of how to use `encrypted-message`.
-- [`examples/key_config_with_external_data.rs`](examples/key_config_with_external_data.rs), an example of a `KeyConfig` that depends on external data, like a user-provided key or password.
+- [`examples/config_with_external_data.rs`](examples/config_with_external_data.rs), an example of a `Config` that depends on external data, like a user-provided key or password.
 
 ## Security
 

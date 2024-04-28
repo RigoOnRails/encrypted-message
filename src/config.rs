@@ -1,12 +1,12 @@
-//! Contains the [`KeyConfig`] trait used to define a key configuration to use with [`EncryptedMessage`](crate::EncryptedMessage).
+//! Contains the [`Config`] trait used to define the configuration for an [`EncryptedMessage`](crate::EncryptedMessage).
 
 use std::fmt::Debug;
 
 pub use secrecy::{Secret, ExposeSecret};
 
-/// A trait to define a key configuration to use with [`EncryptedMessage`](crate::EncryptedMessage).
+/// A trait to define the configuration for an [`EncryptedMessage`](crate::EncryptedMessage).
 /// This allows you to effectively define different keys for different kinds of data if needed.
-pub trait KeyConfig: Debug {
+pub trait Config: Debug {
     /// Returns a list of keys to use for encryption.
     ///
     /// The first key is considered the primary key, & is always used for encryption.
@@ -14,7 +14,7 @@ pub trait KeyConfig: Debug {
     /// an [`EncryptedMessage`](crate::EncryptedMessage). This allows for key rotation.
     fn keys(&self) -> Vec<Secret<[u8; 32]>>;
 
-    /// Returns the primary key, which is the first key in [`KeyConfig::keys`].
+    /// Returns the primary key, which is the first key in [`Config::keys`].
     fn primary_key(&self) -> Secret<[u8; 32]> {
         let mut keys = self.keys();
         assert!(!keys.is_empty(), "Must provide at least one key.");
@@ -27,11 +27,11 @@ pub trait KeyConfig: Debug {
 mod tests {
     use super::*;
 
-    use crate::testing::TestKeyConfig;
+    use crate::testing::TestConfig;
 
     #[test]
     fn primary_key_returns_first_key() {
-        let config = TestKeyConfig;
+        let config = TestConfig;
         assert_eq!(config.primary_key().expose_secret(), config.keys()[0].expose_secret());
     }
 }

@@ -8,10 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Re-export `secrecy::ExposeSecret` in the `key_config` module.
+- Re-export `secrecy::ExposeSecret` in the `config` module.
 
 ### Changed
-- `KeyConfig` is no longer exported through `lib.rs`. You'll have to use the full path to reach it.
+- `key_config::KeyConfig` has been moved to `config::Config` & is no longer exposed through `lib.rs`. You'll have to use the full path to reach it.
 
 ### Removed
 - Removed the `utilities::key_decoder` module, as it's out of scope for this library.
