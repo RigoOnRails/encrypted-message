@@ -13,9 +13,12 @@ Safely encrypt & store serializable data using AES-256-GCM.
 encrypted-message = "0.2"
 ```
 
-## Diesel support
+# Integration with Diesel
 
-`EncryptedMessage` implements [`FromSql`](https://docs.diesel.rs/2.1.x/diesel/deserialize/trait.FromSql.html) & [`ToSql`](https://docs.diesel.rs/2.1.x/diesel/serialize/trait.ToSql.html).
+`EncryptedMessage` implements [`FromSql`][diesel-fromsql] & [`ToSql`][diesel-tosql], allowing you to use `EncryptedMessage` as a field type in your models.
+
+- **MySQL**: Enable the `diesel` & `diesel-mysql` features. Supports the [`Json`][diesel-json] type.
+- **PostgreSQL**: Enable the `diesel` & `diesel-postgres` features. Supports the [`Json`][diesel-json] & [`Jsonb`][diesel-jsonb] types.
 
 ```toml
 [dependencies]
@@ -35,5 +38,10 @@ from the [Rust Crypto][rust-crypto] organization.
 Keys are handled safely using the [`secrecy`](https://crates.io/crates/secrecy) crate,
 which internally uses the [`zeroize`](https://crates.io/crates/zeroize) crate (also from [Rust Crypto][rust-crypto])
 to zero-out the keys in memory when no longer used.
+
+[diesel-fromsql]: https://docs.diesel.rs/2.1.x/diesel/deserialize/trait.FromSql.html
+[diesel-tosql]: https://docs.diesel.rs/2.1.x/diesel/serialize/trait.ToSql.html
+[diesel-json]: https://docs.diesel.rs/2.1.x/diesel/sql_types/struct.Json.html
+[diesel-jsonb]: https://docs.diesel.rs/2.1.x/diesel/sql_types/struct.Jsonb.html
 
 [rust-crypto]: https://github.com/RustCrypto

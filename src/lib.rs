@@ -1,5 +1,5 @@
-//! Safely encrypt & store serializable data using AES-256-GCM.
-//!
+#![doc = include_str!("../README.md")]
+
 //! # Key configuration
 //!
 //! First, you need to create a key configuration that implements the [`KeyConfig`] trait.
@@ -155,14 +155,6 @@
 //! // Update the user's diary using the same encryption strategy & key config.
 //! user.diary = user.diary.with_new_payload_and_key_config("More personal stuff".to_string(), &key_config).unwrap();
 //! ```
-//!
-//! # Integration with Diesel
-//!
-//! [`EncryptedMessage`] implements [`FromSql`](diesel::deserialize::FromSql) & [`ToSql`](diesel::serialize::ToSql),
-//! allowing you to use `EncryptedMessage` as a field type in your models.
-//!
-//! - **MySQL**: Enable the `diesel` & `diesel-mysql` features. Supports the [`Json`](diesel::sql_types::Json) type.
-//! - **PostgreSQL**: Enable the `diesel` & `diesel-postgres` features. Supports the [`Json`](diesel::sql_types::Json) & [`Jsonb`](diesel::sql_types::Jsonb) types.
 
 pub mod strategy;
 use strategy::Strategy;
