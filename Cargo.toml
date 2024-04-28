@@ -1,7 +1,7 @@
 [package]
 name = "encrypted-message"
-description = "Safely encrypt & store serializable data using AES-256-GCM."
-keywords = ["encryption", "aes", "diesel"]
+description = "Safely encrypt & store serializable data using XChaCha20Poly1305."
+keywords = ["encryption", "xchacha20poly1305", "diesel"]
 categories = ["cryptography"]
 version = "0.3.0"
 edition = "2021"
@@ -9,8 +9,8 @@ license = "MIT"
 repository = "https://github.com/RigoOnRails/encrypted-message"
 
 [dependencies]
-aes-gcm = "0.10.3"
 base64 = "0.22.0"
+chacha20poly1305 = "0.10.1"
 diesel = { version = "2.1.5", optional = true, features = ["serde_json"] }
 hmac = "0.12.1"
 rand = "0.8.5"

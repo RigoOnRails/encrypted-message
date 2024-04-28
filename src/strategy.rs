@@ -13,8 +13,8 @@ mod private {
 }
 
 pub trait Strategy: private::Sealed + Debug {
-    /// Generates a 96-bit nonce to encrypt a payload.
-    fn generate_nonce_for(payload: &[u8], key: &[u8; 32]) -> [u8; 12];
+    /// Generates a 192-bit nonce to encrypt a payload.
+    fn generate_nonce_for(payload: &[u8], key: &[u8; 32]) -> [u8; 24];
 }
 
 /// This encryption strategy is guaranteed to always produce the same nonce for a payload,
@@ -25,16 +25,16 @@ pub trait Strategy: private::Sealed + Debug {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Deterministic;
 impl Strategy for Deterministic {
-    /// Generates a deterministic 96-bit nonce for the payload.
-    fn generate_nonce_for(payload: &[u8], key: &[u8; 32]) -> [u8; 12] {
+    /// Generates a deterministic 192-bit nonce for the payload.
+    fn generate_nonce_for(payload: &[u8], key: &[u8; 32]) -> [u8; 24] {
         let mut mac = Hmac::<Sha256>::new_from_slice(key).unwrap();
         mac.update(payload);
 
-        mac.finalize().into_bytes()[0..12].try_into().unwrap()
+        mac.finalize().into_bytes()[0..24].try_into().unwrap()
     }
 }
 
-/// This encryption strategy is guaranteed to always produce a random nonce, regardless of the payload,
+/// This encryption strategy will produce a random nonce, regardless of the payload,
 /// which will generate a different encrypted message every time.
 ///
 /// This encryption strategy improves security by making crypto-analysis of encrypted messages harder,
@@ -42,8 +42,8 @@ impl Strategy for Deterministic {
 #[derive(Debug, PartialEq, Eq)]
 pub struct Randomized;
 impl Strategy for Randomized {
-    /// Generates a random 96-bit nonce for the payload.
-    fn generate_nonce_for(_payload: &[u8], _key: &[u8; 32]) -> [u8; 12] {
+    /// Generates a random 192-bit nonce for the payload.
+    fn generate_nonce_for(_payload: &[u8], _key: &[u8; 32]) -> [u8; 24] {
         rand::random()
     }
 }
@@ -68,11 +68,11 @@ mod tests {
             let key = TestConfigDeterministic.primary_key();
             let nonce = Deterministic::generate_nonce_for("rigo is cool".as_bytes(), key.expose_secret());
 
-            // Test that the nonce is 12 bytes long.
-            assert_eq!(nonce.len(), 12);
+            // Test that the nonce is 24 bytes long.
+            assert_eq!(nonce.len(), 24);
 
             // Test that the nonce is deterministic.
-            assert_eq!(nonce, *base64::decode("Ts2jGkMEW9NFsQZX").unwrap());
+            assert_eq!(nonce, *base64::decode("Ts2jGkMEW9NFsQZXO+2BA60uExH5xfEe").unwrap());
         }
     }
 
@@ -86,9 +86,9 @@ mod tests {
             let first_nonce = Randomized::generate_nonce_for(payload, key.expose_secret());
             let second_nonce = Randomized::generate_nonce_for(payload, key.expose_secret());
 
-            // Test that the nonces are 12 bytes long.
-            assert_eq!(first_nonce.len(), 12);
-            assert_eq!(second_nonce.len(), 12);
+            // Test that the nonces are 24 bytes long.
+            assert_eq!(first_nonce.len(), 24);
+            assert_eq!(second_nonce.len(), 24);
 
             // Test that the nonces never match, even when generated for the same payload.
             assert_ne!(first_nonce, second_nonce);

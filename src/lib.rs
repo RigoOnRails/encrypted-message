@@ -170,7 +170,7 @@ mod testing;
 use std::{fmt::Debug, marker::PhantomData};
 
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
-use aes_gcm::{KeyInit as _, Aes256Gcm, AeadInPlace as _};
+use chacha20poly1305::{KeyInit as _, XChaCha20Poly1305, AeadInPlace as _};
 use secrecy::ExposeSecret as _;
 
 /// Used to safely handle & transport encrypted data within your application.
@@ -210,7 +210,7 @@ struct EncryptedMessageHeaders {
 }
 
 impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> {
-    /// Creates an [`EncryptedMessage`] from a payload, using the AES-256-GCM encryption cipher.
+    /// Creates an [`EncryptedMessage`] from a payload, using the XChaCha20Poly1305 encryption cipher.
     ///
     /// # Errors
     ///
@@ -221,7 +221,7 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
 
         let key = config.primary_key();
         let nonce = C::Strategy::generate_nonce_for(&payload, key.expose_secret());
-        let cipher = Aes256Gcm::new_from_slice(key.expose_secret()).unwrap();
+        let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).unwrap();
 
         let mut buffer = payload;
         let tag = cipher.encrypt_in_place_detached(&nonce.into(), b"", &mut buffer).unwrap();
@@ -251,7 +251,7 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
         let tag = base64::decode(&self.headers.tag)?;
 
         for key in config.keys() {
-            let cipher = Aes256Gcm::new_from_slice(key.expose_secret()).unwrap();
+            let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).unwrap();
 
             let mut buffer = payload.clone();
             if cipher.decrypt_in_place_detached(nonce.as_slice().into(), b"", &mut buffer, tag.as_slice().into()).is_err() {
@@ -295,10 +295,10 @@ mod tests {
             assert_eq!(
                 EncryptedMessage::<String, TestConfigDeterministic>::encrypt("rigo does pretty codes".to_string()).unwrap(),
                 EncryptedMessage {
-                    payload: "K6FbTsR8lNt9osq7vfvpDl4gPOxaQUhH".to_string(),
+                    payload: "48lwH3W0sEJjjC3z4S8qyNVpdf6jN0sF".to_string(),
                     headers: EncryptedMessageHeaders {
-                        nonce: "1WOXnWc3iX5iA3wd".to_string(),
-                        tag: "fdnw5HvNImSdBm0nTFiRFw==".to_string(),
+                        nonce: "1WOXnWc3iX5iA3wdqMmcSeGEE365QXK0".to_string(),
+                        tag: "uXQhmffPV/1D7qG8stw6vA==".to_string(),
                     },
                     payload_type: PhantomData,
                     config: PhantomData,
@@ -361,10 +361,10 @@ mod tests {
         fn test_decryption_error() {
             // Created using a random disposed key not used in other tests.
             let message = EncryptedMessage {
-                payload: "2go7QdfuErm53fOI2jiNnHcPunwGWHpM".to_string(),
+                payload: "c+cOk5DA9y/4LulYA+WCAxFjI8WGbTVK".to_string(),
                 headers: EncryptedMessageHeaders {
-                    nonce: "Exz8Fa9hKHEWvvmZ".to_string(),
-                    tag: "r/AdKM4Dp0YAr/7dzAqujw==".to_string(),
+                    nonce: "dBI9t1Y8mUBea+b0nyWXlTeoCdrNPLkg".to_string(),
+                    tag: "6NLYKDiHNRkpwoQusf9BaA==".to_string(),
                 },
                 payload_type: PhantomData::<String>,
                 config: PhantomData::<TestConfigDeterministic>,
@@ -393,10 +393,10 @@ mod tests {
     fn allows_rotating_keys() {
         // Created using TestConfig's second key.
         let message = EncryptedMessage {
-            payload: "DT6PJ1ROSA==".to_string(),
+            payload: "LC4u257NQw==".to_string(),
             headers: EncryptedMessageHeaders {
-                nonce: "nv6rH50Sn2Po320K".to_string(),
-                tag: "ZtAoub/4fB30QetW+O7oaA==".to_string(),
+                nonce: "nv6rH50Sn2Po320KT57fg1a3Lyu/IGeG".to_string(),
+                tag: "/jK8Y7fOyA+S7/dTxRR3SQ==".to_string(),
             },
             payload_type: PhantomData::<String>,
             config: PhantomData::<TestConfigDeterministic>,
@@ -458,10 +458,10 @@ mod tests {
     #[test]
     fn to_and_from_json() {
         let message = EncryptedMessage {
-            payload: "SBwByX5cxBSMgPlixDEf0pYEa6W41TIA".to_string(),
+            payload: "48lwH3W0sEJjjC3z4S8qyNVpdf6jN0sF".to_string(),
             headers: EncryptedMessageHeaders {
-                nonce: "xg172uWMpjJqmWro".to_string(),
-                tag: "S88wdO9tf/381mZQ88kMNw==".to_string(),
+                nonce: "1WOXnWc3iX5iA3wdqMmcSeGEE365QXK0".to_string(),
+                tag: "uXQhmffPV/1D7qG8stw6vA==".to_string(),
             },
             payload_type: PhantomData::<String>,
             config: PhantomData::<TestConfigRandomized>,
@@ -472,10 +472,10 @@ mod tests {
         assert_eq!(
             message_json,
             json!({
-                "p": "SBwByX5cxBSMgPlixDEf0pYEa6W41TIA",
+                "p": "48lwH3W0sEJjjC3z4S8qyNVpdf6jN0sF",
                 "h": {
-                    "iv": "xg172uWMpjJqmWro",
-                    "at": "S88wdO9tf/381mZQ88kMNw==",
+                    "iv": "1WOXnWc3iX5iA3wdqMmcSeGEE365QXK0",
+                    "at": "uXQhmffPV/1D7qG8stw6vA==",
                 },
             }),
         );

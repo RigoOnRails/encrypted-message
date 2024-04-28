@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Changed the cipher to XChaCha20Poly1305, which uses a 192-bit nonce compared to AES-GCM's 96-bit nonces. This drastically reduces the concern about using random byte sequences for nonce generation. The likelyhood of a collision is considered negligible by most cryptography experts.
+
 ## [0.3.0] - 2024-04-28
 
 ### Added

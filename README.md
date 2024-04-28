@@ -4,7 +4,7 @@
 [!["Lint & run tests" workflow](https://img.shields.io/github/actions/workflow/status/RigoOnRails/encrypted-message/development.yml?logo=github)](https://github.com/RigoOnRails/encrypted-message/actions/workflows/development.yml)
 [![License](https://img.shields.io/crates/l/encrypted-message)](./LICENSE)
 
-Safely encrypt & store serializable data using AES-256-GCM.
+Safely encrypt & store serializable data using XChaCha20Poly1305.
 
 ## Install
 
@@ -32,7 +32,7 @@ encrypted-message = { version = "0.3", features = ["diesel", "diesel-<mysql|post
 
 ## Security
 
-This crate uses trusted, pure-Rust encryption using the [`aes_gcm`](https://crates.io/crates/aes_gcm) crate
+This crate uses trusted, pure-Rust encryption using the [`chacha20poly1305`](https://crates.io/crates/chacha20poly1305) crate
 from the [Rust Crypto][rust-crypto] organization.
 
 Keys are handled safely using the [`secrecy`](https://crates.io/crates/secrecy) crate,
