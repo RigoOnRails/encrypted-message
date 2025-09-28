@@ -172,6 +172,7 @@ use std::{fmt::Debug, marker::PhantomData};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use chacha20poly1305::{KeyInit, XChaCha20Poly1305, AeadInPlace};
 use secrecy::ExposeSecret;
+use zeroize::Zeroizing;
 
 /// Used to safely handle & transport encrypted data within your application.
 /// It contains an encrypted payload, along with a nonce & tag that are
@@ -253,7 +254,7 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
         for key in config.keys() {
             let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).unwrap();
 
-            let mut buffer = payload.clone();
+            let mut buffer = Zeroizing::new(payload.clone());
             if cipher.decrypt_in_place_detached(nonce.as_slice().into(), b"", &mut buffer, tag.as_slice().into()).is_err() {
                 continue;
             };
