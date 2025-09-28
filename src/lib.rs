@@ -19,12 +19,12 @@
 //!     type Strategy = Randomized;
 //!
 //!     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
-//!         std::env::var("ENCRYPTION_KEYS").unwrap()
+//!         Secret::new(std::env::var("ENCRYPTION_KEYS").unwrap())
+//!             .expose_secret()
 //!             .split(", ")
 //!             .map(|hex_key| {
-//!                 let hex_key = Secret::new(hex_key.to_string());
 //!                 let mut key = [0; 32];
-//!                 hex::decode_to_slice(hex_key.expose_secret(), &mut key).unwrap();
+//!                 hex::decode_to_slice(hex_key, &mut key).unwrap();
 //!
 //!                 key.into()
 //!             })

@@ -15,7 +15,7 @@ encrypted-message = "0.3.0"
 
 ## Integration with Diesel
 
-`EncryptedMessage` implements [`FromSql`][diesel-fromsql] & [`ToSql`][diesel-tosql], allowing you to use `EncryptedMessage` as a field type in your models.
+`EncryptedMessage` implements [`FromSql`](https://docs.diesel.rs/2.1.x/diesel/deserialize/trait.FromSql.html) & [`ToSql`](https://docs.diesel.rs/2.1.x/diesel/serialize/trait.ToSql.html), allowing you to use `EncryptedMessage` as a field type in your models.
 
 - **MySQL**: Enable the `diesel` & `diesel-mysql` features. Supports the [`Json`][diesel-json] type.
 - **PostgreSQL**: Enable the `diesel` & `diesel-postgres` features. Supports the [`Json`][diesel-json] & [`Jsonb`][diesel-jsonb] types.
@@ -39,8 +39,6 @@ Keys are handled safely using the [`secrecy`](https://crates.io/crates/secrecy) 
 which internally uses the [`zeroize`](https://crates.io/crates/zeroize) crate (also from [Rust Crypto][rust-crypto])
 to zero-out the keys in memory when no longer used.
 
-[diesel-fromsql]: https://docs.diesel.rs/2.1.x/diesel/deserialize/trait.FromSql.html
-[diesel-tosql]: https://docs.diesel.rs/2.1.x/diesel/serialize/trait.ToSql.html
 [diesel-json]: https://docs.diesel.rs/2.1.x/diesel/sql_types/struct.Json.html
 [diesel-jsonb]: https://docs.diesel.rs/2.1.x/diesel/sql_types/struct.Jsonb.html
 

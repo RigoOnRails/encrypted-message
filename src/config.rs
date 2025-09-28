@@ -7,6 +7,7 @@ pub use secrecy::{Secret, ExposeSecret};
 /// A trait to define the configuration for an [`EncryptedMessage`](crate::EncryptedMessage).
 /// This allows you to effectively define different keys for different kinds of data if needed.
 pub trait Config: Debug {
+    /// The strategy to use for encryption. See the [`strategy`](crate::strategy) module for more information.
     type Strategy: crate::strategy::Strategy;
 
     /// Returns a list of keys to use for encryption.
