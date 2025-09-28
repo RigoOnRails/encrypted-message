@@ -3,7 +3,7 @@
 use encrypted_message::{
     EncryptedMessage,
     strategy::Randomized,
-    config::{Config, Secret, ExposeSecret as _},
+    config::{Config, Secret, ExposeSecret},
 };
 use pbkdf2::pbkdf2_hmac_array;
 use sha2::Sha256;
@@ -37,9 +37,7 @@ fn main() {
     };
 
     // Encrypt a user's diary.
-    let diary: EncryptedMessage::<String, UserEncryptionConfig> = {
-        EncryptedMessage::encrypt_with_config("Very personal stuff".to_string(), &config).unwrap()
-    };
+    let diary = EncryptedMessage::encrypt_with_config("Very personal stuff".to_string(), &config).unwrap();
     println!("Encrypted diary: {diary:#?}");
 
     // Decrypt the user's diary.

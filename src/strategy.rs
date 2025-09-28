@@ -52,10 +52,10 @@ impl Strategy for Randomized {
 mod tests {
     use super::*;
 
-    use secrecy::ExposeSecret as _;
+    use secrecy::ExposeSecret;
 
     use crate::{
-        config::Config as _,
+        config::Config,
         testing::{TestConfigDeterministic, TestConfigRandomized},
         utilities::base64,
     };

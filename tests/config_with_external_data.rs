@@ -1,7 +1,7 @@
 use encrypted_message::{
     EncryptedMessage,
     strategy::Randomized,
-    config::{Config, Secret, ExposeSecret as _},
+    config::{Config, Secret, ExposeSecret},
 };
 use pbkdf2::pbkdf2_hmac_array;
 use sha2::Sha256;
@@ -32,9 +32,7 @@ fn config_with_external_data() {
     };
 
     // Encrypt a payload.
-    let encrypted: EncryptedMessage<String, UserEncryptionConfig> = {
-        EncryptedMessage::encrypt_with_config("Hi".to_string(), &config).unwrap()
-    };
+    let encrypted = EncryptedMessage::encrypt_with_config("Hi".to_string(), &config).unwrap();
 
     // Decrypt the payload.
     let decrypted = encrypted.decrypt_with_config(&config).unwrap();

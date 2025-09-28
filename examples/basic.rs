@@ -1,10 +1,9 @@
-//! This example demonstrates how to use `encrypted-message`
-//! to encrypt & decrypt a payload.
+//! This example demonstrates how to use `encrypted-message` to encrypt & decrypt a payload.
 
 use encrypted_message::{
     EncryptedMessage,
     strategy::Randomized,
-    config::{Config, Secret, ExposeSecret as _},
+    config::{Config, Secret, ExposeSecret},
 };
 
 /// NOTE: Never hardcode your keys like this, obviously.
@@ -28,9 +27,7 @@ impl Config for EncryptionConfig {
 
 fn main() {
     // Encrypt a user's diary.
-    let diary: EncryptedMessage::<String, EncryptionConfig> = {
-        EncryptedMessage::encrypt("Very personal stuff".to_string()).unwrap()
-    };
+    let diary = EncryptedMessage::<_, EncryptionConfig>::encrypt("Very personal stuff".to_string()).unwrap();
     println!("Encrypted diary: {diary:#?}");
 
     // Decrypt the user's diary.

@@ -1,4 +1,4 @@
-use base64::{engine::general_purpose, DecodeError, Engine as _};
+use base64::{engine::general_purpose, DecodeError, Engine};
 
 pub fn encode<T: AsRef<[u8]>>(input: T) -> String {
     general_purpose::STANDARD.encode(input)

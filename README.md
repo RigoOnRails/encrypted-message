@@ -10,7 +10,7 @@ Safely encrypt & store serializable data using XChaCha20Poly1305.
 
 ```toml
 [dependencies]
-encrypted-message = "0.3"
+encrypted-message = "0.3.0"
 ```
 
 ## Integration with Diesel
@@ -22,7 +22,7 @@ encrypted-message = "0.3"
 
 ```toml
 [dependencies]
-encrypted-message = { version = "0.3", features = ["diesel", "diesel-<mysql|postgres>"] }
+encrypted-message = { version = "0.3.0", features = ["diesel", "diesel-<mysql|postgres>"] }
 ```
 
 ## Examples

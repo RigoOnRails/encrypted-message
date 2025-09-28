@@ -9,7 +9,7 @@
 //!
 //! ```
 //! use encrypted_message::{
-//!     config::{Config, Secret, ExposeSecret as _},
+//!     config::{Config, Secret, ExposeSecret},
 //!     strategy::Randomized,
 //! };
 //!
@@ -109,7 +109,7 @@
 //! ```
 //! use encrypted_message::{
 //!     EncryptedMessage,
-//!     config::{Config, Secret, ExposeSecret as _},
+//!     config::{Config, Secret, ExposeSecret},
 //!     strategy::Randomized,
 //! };
 //! use pbkdf2::pbkdf2_hmac_array;
@@ -170,8 +170,8 @@ mod testing;
 use std::{fmt::Debug, marker::PhantomData};
 
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
-use chacha20poly1305::{KeyInit as _, XChaCha20Poly1305, AeadInPlace as _};
-use secrecy::ExposeSecret as _;
+use chacha20poly1305::{KeyInit, XChaCha20Poly1305, AeadInPlace};
+use secrecy::ExposeSecret;
 
 /// Used to safely handle & transport encrypted data within your application.
 /// It contains an encrypted payload, along with a nonce & tag that are
