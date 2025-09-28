@@ -247,14 +247,13 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
     /// - Returns a [`DecryptionError::Deserialization`] error if the payload cannot be deserialized into the expected type.
     ///   See [`serde_json::from_slice`] for more information.
     pub fn decrypt_with_config(&self, config: &C) -> Result<P, DecryptionError> {
-        let payload = base64::decode(&self.payload)?;
         let nonce = base64::decode(&self.headers.nonce)?;
         let tag = base64::decode(&self.headers.tag)?;
 
         for key in config.keys() {
             let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).unwrap();
 
-            let mut buffer = Zeroizing::new(payload.clone());
+            let mut buffer = Zeroizing::new(base64::decode(&self.payload)?);
             if cipher.decrypt_in_place_detached(nonce.as_slice().into(), b"", &mut buffer, tag.as_slice().into()).is_err() {
                 continue;
             };
