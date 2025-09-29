@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: swatinem/rust-cache@v2
 
@@ -42,7 +42,7 @@ jobs:
       POSTGRES_DATABASE_URL: postgres://root:root@127.0.0.1/test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: swatinem/rust-cache@v2
 
