@@ -72,7 +72,7 @@ mod tests {
 
         #[test]
         fn nonce_is_deterministic() {
-            let key = TestConfigDeterministic.primary_key();
+            let key = TestConfigDeterministic.primary_key().unwrap();
             let nonce = Deterministic::generate_nonce("rigo is cool".as_bytes(), key.expose_secret()).unwrap();
 
             // Test that the nonce is 24 bytes long.
@@ -89,7 +89,7 @@ mod tests {
         #[test]
         fn nonce_is_randomized() {
             let payload = "much secret much secure".as_bytes();
-            let key = TestConfigRandomized.primary_key();
+            let key = TestConfigRandomized.primary_key().unwrap();
             let first_nonce = Randomized::generate_nonce(payload, key.expose_secret()).unwrap();
             let second_nonce = Randomized::generate_nonce(payload, key.expose_secret()).unwrap();
 

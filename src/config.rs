@@ -4,6 +4,8 @@ use std::fmt::Debug;
 
 pub use secrecy::{Secret, ExposeSecret};
 
+use crate::error::ConfigError;
+
 /// A trait to define the configuration for an [`EncryptedMessage`](crate::EncryptedMessage).
 /// This allows you to effectively define different keys for different kinds of data if needed.
 pub trait Config: Debug {
@@ -18,11 +20,8 @@ pub trait Config: Debug {
     fn keys(&self) -> Vec<Secret<[u8; 32]>>;
 
     /// Returns the primary key, which is the first key in [`Config::keys`].
-    fn primary_key(&self) -> Secret<[u8; 32]> {
-        let mut keys = self.keys();
-        assert!(!keys.is_empty(), "Must provide at least one key.");
-
-        keys.remove(0)
+    fn primary_key(&self) -> Result<Secret<[u8; 32]>, ConfigError> {
+        self.keys().into_iter().next().ok_or(ConfigError::NoKeysProvided)
     }
 }
 
@@ -35,6 +34,6 @@ mod tests {
     #[test]
     fn primary_key_returns_first_key() {
         let config = TestConfig;
-        assert_eq!(config.primary_key().expose_secret(), config.keys()[0].expose_secret());
+        assert_eq!(config.primary_key().unwrap().expose_secret(), config.keys()[0].expose_secret());
     }
 }

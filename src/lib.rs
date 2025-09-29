@@ -220,7 +220,7 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
     pub fn encrypt_with_config(payload: P, config: &C) -> Result<Self, EncryptionError> {
         let payload = serde_json::to_vec(&payload)?;
 
-        let key = config.primary_key();
+        let key = config.primary_key()?;
         let nonce = C::Strategy::generate_nonce(&payload, key.expose_secret())?;
         let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).map_err(|_| ConfigError::InvalidKeyLength)?;
 

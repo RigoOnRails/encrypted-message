@@ -6,6 +6,9 @@ use thiserror::Error;
 pub enum ConfigError {
     #[error("The provided key length is invalid. It must be 32 bytes.")]
     InvalidKeyLength,
+
+    #[error("No keys were provided in the configuration.")]
+    NoKeysProvided,
 }
 
 /// Returned from [`EncryptedMessage`](crate::EncryptedMessage) encryption methods when an error occurs.
