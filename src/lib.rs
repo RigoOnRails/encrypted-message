@@ -151,22 +151,17 @@
 //! ```
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-pub mod strategy;
-use strategy::Strategy;
-
+pub mod config;
 pub mod error;
-pub use error::{ConfigError, EncryptionError, DecryptionError};
+pub mod strategy;
 
 mod integrations;
-
-pub mod config;
-use config::Config;
-
 mod utilities;
-use utilities::base64;
 
 #[cfg(test)]
 mod testing;
+
+pub use crate::error::{ConfigError, EncryptionError, DecryptionError};
 
 use std::{fmt::Debug, marker::PhantomData};
 
@@ -174,6 +169,10 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use chacha20poly1305::{KeyInit, XChaCha20Poly1305, AeadInPlace};
 use secrecy::ExposeSecret;
 use zeroize::Zeroizing;
+
+use crate::strategy::Strategy;
+use crate::config::Config;
+use crate::utilities::base64;
 
 /// Used to safely handle & transport encrypted data within your application.
 /// It contains an encrypted payload, along with a nonce & tag that are
