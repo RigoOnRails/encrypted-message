@@ -226,7 +226,7 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
         let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).map_err(|_| ConfigError::InvalidKeyLength)?;
 
         let mut buffer = payload;
-        let tag = cipher.encrypt_in_place_detached(&nonce.into(), b"", &mut buffer).unwrap();
+        let tag = cipher.encrypt_in_place_detached(&nonce.into(), b"", &mut buffer).map_err(|_| EncryptionError::Encryption)?;
 
         Ok(EncryptedMessage {
             payload: base64::encode(buffer),

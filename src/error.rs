@@ -15,6 +15,10 @@ pub enum EncryptionError {
     #[error(transparent)]
     Config(#[from] ConfigError),
 
+    /// This error occurs when a payload could not be encrypted.
+    #[error("The payload could not be encrypted.")]
+    Encryption,
+
     /// This error occurs when a payload could not be serialized into JSON.
     #[error("The payload could not be serialized into JSON.")]
     Serialization(#[from] serde_json::Error),
