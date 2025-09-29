@@ -5,6 +5,8 @@ use std::fmt::Debug;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 
+use crate::error::ConfigError;
+
 mod private {
     pub trait Sealed {}
 
@@ -14,7 +16,7 @@ mod private {
 
 pub trait Strategy: private::Sealed + Debug {
     /// Generates a 192-bit nonce to encrypt a payload.
-    fn generate_nonce(payload: &[u8], key: &[u8; 32]) -> [u8; 24];
+    fn generate_nonce(payload: &[u8], key: &[u8; 32]) -> Result<[u8; 24], ConfigError>;
 }
 
 /// This encryption strategy is guaranteed to always produce the same nonce for a payload,
@@ -26,11 +28,16 @@ pub trait Strategy: private::Sealed + Debug {
 pub struct Deterministic;
 impl Strategy for Deterministic {
     /// Generates a deterministic 192-bit nonce for the payload.
-    fn generate_nonce(payload: &[u8], key: &[u8; 32]) -> [u8; 24] {
-        let mut mac = Hmac::<Sha256>::new_from_slice(key).unwrap();
+    fn generate_nonce(payload: &[u8], key: &[u8; 32]) -> Result<[u8; 24], ConfigError> {
+        let mut mac = Hmac::<Sha256>::new_from_slice(key).map_err(|_| ConfigError::InvalidKeyLength)?;
         mac.update(payload);
 
-        mac.finalize().into_bytes()[0..24].try_into().unwrap()
+        let digest = mac.finalize().into_bytes();
+        let nonce = digest[0..24].try_into().unwrap_or_else(|_| {
+            unreachable!("HMAC-SHA256 digests are 32 bytes long.")
+        });
+
+        Ok(nonce)
     }
 }
 
@@ -43,8 +50,8 @@ impl Strategy for Deterministic {
 pub struct Randomized;
 impl Strategy for Randomized {
     /// Generates a random 192-bit nonce for the payload.
-    fn generate_nonce(_payload: &[u8], _key: &[u8; 32]) -> [u8; 24] {
-        rand::random()
+    fn generate_nonce(_payload: &[u8], _key: &[u8; 32]) -> Result<[u8; 24], ConfigError> {
+        Ok(rand::random())
     }
 }
 
@@ -66,7 +73,7 @@ mod tests {
         #[test]
         fn nonce_is_deterministic() {
             let key = TestConfigDeterministic.primary_key();
-            let nonce = Deterministic::generate_nonce("rigo is cool".as_bytes(), key.expose_secret());
+            let nonce = Deterministic::generate_nonce("rigo is cool".as_bytes(), key.expose_secret()).unwrap();
 
             // Test that the nonce is 24 bytes long.
             assert_eq!(nonce.len(), 24);
@@ -83,8 +90,8 @@ mod tests {
         fn nonce_is_randomized() {
             let payload = "much secret much secure".as_bytes();
             let key = TestConfigRandomized.primary_key();
-            let first_nonce = Randomized::generate_nonce(payload, key.expose_secret());
-            let second_nonce = Randomized::generate_nonce(payload, key.expose_secret());
+            let first_nonce = Randomized::generate_nonce(payload, key.expose_secret()).unwrap();
+            let second_nonce = Randomized::generate_nonce(payload, key.expose_secret()).unwrap();
 
             // Test that the nonces are 24 bytes long.
             assert_eq!(first_nonce.len(), 24);
