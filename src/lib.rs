@@ -149,6 +149,7 @@
 //! // Decrypt the user's diary.
 //! let decrypted: String = user.diary.decrypt_with_config(&config).unwrap();
 //! ```
+#![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod strategy;
 use strategy::Strategy;
