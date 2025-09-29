@@ -155,7 +155,7 @@ pub mod strategy;
 use strategy::Strategy;
 
 pub mod error;
-pub use error::{EncryptionError, DecryptionError};
+pub use error::{ConfigError, EncryptionError, DecryptionError};
 
 mod integrations;
 
@@ -223,7 +223,7 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
 
         let key = config.primary_key();
         let nonce = C::Strategy::generate_nonce_for(&payload, key.expose_secret());
-        let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).unwrap();
+        let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).map_err(|_| ConfigError::InvalidKeyLength)?;
 
         let mut buffer = payload;
         let tag = cipher.encrypt_in_place_detached(&nonce.into(), b"", &mut buffer).unwrap();
@@ -252,7 +252,7 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
         let tag = base64::decode(&self.headers.tag)?;
 
         for key in config.keys() {
-            let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).unwrap();
+            let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).map_err(|_| ConfigError::InvalidKeyLength)?;
 
             let mut buffer = Zeroizing::new(base64::decode(&self.payload)?);
             if cipher.decrypt_in_place_detached(nonce.as_slice().into(), b"", &mut buffer, tag.as_slice().into()).is_err() {

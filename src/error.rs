@@ -2,9 +2,19 @@
 
 use thiserror::Error;
 
+#[derive(Debug, Error)]
+pub enum ConfigError {
+    #[error("The provided key length is invalid. It must be 32 bytes.")]
+    InvalidKeyLength,
+}
+
 /// Returned from [`EncryptedMessage`](crate::EncryptedMessage) encryption methods when an error occurs.
 #[derive(Debug, Error)]
 pub enum EncryptionError {
+    /// This error occurs when there's an issue with the provided configuration.
+    #[error(transparent)]
+    Config(#[from] ConfigError),
+
     /// This error occurs when a payload could not be serialized into JSON.
     #[error("The payload could not be serialized into JSON.")]
     Serialization(#[from] serde_json::Error),
@@ -16,6 +26,10 @@ pub enum DecryptionError {
     /// This error occurs when a field in [`EncryptedMessage`](crate::EncryptedMessage) could not be base64-decoded.
     #[error(transparent)]
     Base64Decoding(#[from] base64::DecodeError),
+
+    /// This error occurs when there's an issue with the provided configuration.
+    #[error(transparent)]
+    Config(#[from] ConfigError),
 
     /// This error occurs when a payload could not be decrypted with any of the available keys.
     #[error("The payload could not be decrypted with any of the available keys.")]
