@@ -5,5 +5,6 @@ diesel::table! {
         #[max_length = 36]
         id -> Char,
         json -> Nullable<Json>,
+        text -> Nullable<Text>,
     }
 }

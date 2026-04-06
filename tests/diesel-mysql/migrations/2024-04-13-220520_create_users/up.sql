@@ -1,4 +1,5 @@
 CREATE TABLE users (
   id CHAR(36) DEFAULT (UUID()) PRIMARY KEY,
-  json JSON
+  json JSON,
+  text TEXT
 );

@@ -1,8 +1,9 @@
-#![cfg(all(feature = "diesel", feature = "diesel-mysql"))]
+#![cfg(all(feature = "diesel", feature = "diesel-sqlite"))]
 
 mod schema;
 
 use diesel::prelude::*;
+use diesel::connection::SimpleConnection;
 use encrypted_message::{
     EncryptedMessage,
     strategy::Randomized,
@@ -21,54 +22,53 @@ impl Config for EncryptionConfig {
 
 #[derive(Queryable, Selectable)]
 #[diesel(table_name = schema::users)]
-#[diesel(check_for_backend(diesel::mysql::Mysql))]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 struct User {
     #[allow(dead_code)]
-    id: String,
-    json: Option<EncryptedMessage<String, EncryptionConfig>>,
+    id: i32,
     text: Option<EncryptedMessage<String, EncryptionConfig>>,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name = schema::users)]
-#[diesel(check_for_backend(diesel::mysql::Mysql))]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 struct UserInsertable {
-    id: String,
-    json: Option<EncryptedMessage<String, EncryptionConfig>>,
     text: Option<EncryptedMessage<String, EncryptionConfig>>,
 }
 
 #[derive(AsChangeset)]
 #[diesel(table_name = schema::users)]
-#[diesel(check_for_backend(diesel::mysql::Mysql))]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 struct UserChangeset {
-    json: Option<Option<EncryptedMessage<String, EncryptionConfig>>>,
     text: Option<Option<EncryptedMessage<String, EncryptionConfig>>>,
+}
+
+fn setup_db() -> SqliteConnection {
+    let mut connection = SqliteConnection::establish(":memory:").unwrap();
+    connection.batch_execute("
+        CREATE TABLE users (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            text TEXT
+        )
+    ").unwrap();
+    connection
 }
 
 #[test]
 fn encrypted_message_works() {
-    // Attempt to load environment variables from .env.test
-    let _ = dotenvy::from_filename(".env.test");
+    let mut connection = setup_db();
 
-    let database_url = dotenvy::var("MYSQL_DATABASE_URL").expect("MYSQL_DATABASE_URL must be set.");
-    let mut connection = MysqlConnection::establish(&database_url).unwrap();
-
-    // Create a new user.
-    let id = uuid::Uuid::new_v4().to_string();
+    // Insert a new user.
     diesel::insert_into(schema::users::table)
         .values(UserInsertable {
-            id: id.clone(),
-            json: Some(EncryptedMessage::encrypt("Very secret.".to_string()).unwrap()),
             text: Some(EncryptedMessage::encrypt("Very secret, as text.".to_string()).unwrap()),
         })
         .execute(&mut connection)
         .unwrap();
 
-    // Load the new user from the database.
-    let user: User = schema::users::table.find(&id).first(&mut connection).unwrap();
+    // Load the user from the database.
+    let user: User = schema::users::table.first(&mut connection).unwrap();
 
-    // Decrypt the user's secrets.
-    assert_eq!(user.json.as_ref().unwrap().decrypt().unwrap(), "Very secret.");
+    // Decrypt the user's secret.
     assert_eq!(user.text.as_ref().unwrap().decrypt().unwrap(), "Very secret, as text.");
 }

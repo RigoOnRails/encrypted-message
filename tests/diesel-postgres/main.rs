@@ -27,6 +27,7 @@ struct User {
     id: i32,
     json: Option<EncryptedMessage<String, EncryptionConfig>>,
     jsonb: Option<EncryptedMessage<String, EncryptionConfig>>,
+    text: Option<EncryptedMessage<String, EncryptionConfig>>,
 }
 
 #[derive(Insertable)]
@@ -35,6 +36,7 @@ struct User {
 struct UserInsertable {
     json: Option<EncryptedMessage<String, EncryptionConfig>>,
     jsonb: Option<EncryptedMessage<String, EncryptionConfig>>,
+    text: Option<EncryptedMessage<String, EncryptionConfig>>,
 }
 
 #[derive(AsChangeset)]
@@ -43,6 +45,7 @@ struct UserInsertable {
 struct UserChangeset {
     json: Option<Option<EncryptedMessage<String, EncryptionConfig>>>,
     jsonb: Option<Option<EncryptedMessage<String, EncryptionConfig>>>,
+    text: Option<Option<EncryptedMessage<String, EncryptionConfig>>>,
 }
 
 #[test]
@@ -58,6 +61,7 @@ fn encrypted_message_works() {
         .values(UserInsertable {
             json: Some(EncryptedMessage::encrypt("Very secret.".to_string()).unwrap()),
             jsonb: Some(EncryptedMessage::encrypt("Very secret, also binary.".to_string()).unwrap()),
+            text: Some(EncryptedMessage::encrypt("Very secret, as text.".to_string()).unwrap()),
         })
         .get_result(&mut connection)
         .unwrap();
@@ -65,4 +69,5 @@ fn encrypted_message_works() {
     // Decrypt the user's secrets.
     assert_eq!(user.json.as_ref().unwrap().decrypt().unwrap(), "Very secret.");
     assert_eq!(user.jsonb.as_ref().unwrap().decrypt().unwrap(), "Very secret, also binary.");
+    assert_eq!(user.text.as_ref().unwrap().decrypt().unwrap(), "Very secret, as text.");
 }

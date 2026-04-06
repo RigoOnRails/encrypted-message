@@ -25,6 +25,7 @@ zeroize = "1.8.1"
 diesel = ["dep:diesel"]
 diesel-mysql = ["diesel/mysql"]
 diesel-postgres = ["diesel/postgres"]
+diesel-sqlite = ["diesel/sqlite"]
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["html_reports"] }

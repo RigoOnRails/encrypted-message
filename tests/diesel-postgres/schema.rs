@@ -5,5 +5,6 @@ diesel::table! {
         id -> Int4,
         json -> Nullable<Json>,
         jsonb -> Nullable<Jsonb>,
+        text -> Nullable<Text>,
     }
 }
