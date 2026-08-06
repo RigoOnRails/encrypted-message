@@ -1,7 +1,7 @@
 # `encrypted-message`
 [![crates.io](https://img.shields.io/crates/v/encrypted-message?logo=rust)](https://crates.io/crates/encrypted-message)
 [![docs.rs](https://img.shields.io/docsrs/encrypted-message?logo=docs.rs)](https://docs.rs/encrypted-message)
-[!["Lint & run tests" workflow](https://img.shields.io/github/actions/workflow/status/RigoOnRails/encrypted-message/development.yml?logo=github)](https://github.com/RigoOnRails/encrypted-message/actions/workflows/development.yml)
+[!["Lint & run tests" workflow](https://img.shields.io/github/actions/workflow/status/RigoOnRails/encrypted-message/test.yml?logo=github)](https://github.com/RigoOnRails/encrypted-message/actions/workflows/test.yml)
 [![License](https://img.shields.io/crates/l/encrypted-message)](./LICENSE)
 
 Safely encrypt & store serializable data using XChaCha20Poly1305.
