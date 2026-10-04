@@ -9,7 +9,7 @@
 //!
 //! ```
 //! use encrypted_message::{
-//!     config::{Config, Secret, ExposeSecret},
+//!     config::{Config, ExposeSecret, Secret},
 //!     strategy::Randomized,
 //! };
 //!
@@ -108,9 +108,9 @@
 //! If your [`Config`] depends on external data:
 //! ```
 //! use encrypted_message::{
-//!     EncryptedMessage,
-//!     config::{Config, Secret, ExposeSecret},
+//!     config::{Config, ExposeSecret, Secret},
 //!     strategy::Randomized,
+//!     EncryptedMessage,
 //! };
 //! use pbkdf2::pbkdf2_hmac_array;
 //! use sha2::Sha256;
@@ -143,7 +143,8 @@
 //!
 //! // Encrypt a user's diary.
 //! let user = User {
-//!     diary: EncryptedMessage::encrypt_with_config("Very personal stuff".to_string(), &config).unwrap(),
+//!     diary: EncryptedMessage::encrypt_with_config("Very personal stuff".to_string(), &config)
+//!         .unwrap(),
 //! };
 //!
 //! // Decrypt the user's diary.
@@ -161,17 +162,17 @@ mod utilities;
 #[cfg(test)]
 mod testing;
 
-pub use crate::error::{ConfigError, EncryptionError, DecryptionError};
+pub use crate::error::{ConfigError, DecryptionError, EncryptionError};
 
 use std::{fmt::Debug, marker::PhantomData};
 
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
-use chacha20poly1305::{KeyInit, XChaCha20Poly1305, AeadInPlace};
+use chacha20poly1305::{AeadInPlace, KeyInit, XChaCha20Poly1305};
 use secrecy::ExposeSecret;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use zeroize::Zeroizing;
 
-use crate::strategy::Strategy;
 use crate::config::Config;
+use crate::strategy::Strategy;
 use crate::utilities::base64;
 
 /// Used to safely handle & transport encrypted data within your application.
@@ -222,10 +223,13 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
 
         let key = config.primary_key()?;
         let nonce = C::Strategy::generate_nonce(&payload, key.expose_secret())?;
-        let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).map_err(|_| ConfigError::InvalidKeyLength)?;
+        let cipher =
+            XChaCha20Poly1305::new_from_slice(key.expose_secret()).map_err(|_| ConfigError::InvalidKeyLength)?;
 
         let mut buffer = payload;
-        let tag = cipher.encrypt_in_place_detached(&nonce.into(), b"", &mut buffer).map_err(|_| EncryptionError::Encryption)?;
+        let tag = cipher
+            .encrypt_in_place_detached(&nonce.into(), b"", &mut buffer)
+            .map_err(|_| EncryptionError::Encryption)?;
 
         Ok(EncryptedMessage {
             payload: base64::encode(buffer),
@@ -251,10 +255,14 @@ impl<P: Debug + DeserializeOwned + Serialize, C: Config> EncryptedMessage<P, C> 
         let tag = base64::decode(&self.headers.tag)?;
 
         for key in config.keys() {
-            let cipher = XChaCha20Poly1305::new_from_slice(key.expose_secret()).map_err(|_| ConfigError::InvalidKeyLength)?;
+            let cipher =
+                XChaCha20Poly1305::new_from_slice(key.expose_secret()).map_err(|_| ConfigError::InvalidKeyLength)?;
 
             let mut buffer = Zeroizing::new(base64::decode(&self.payload)?);
-            if cipher.decrypt_in_place_detached(nonce.as_slice().into(), b"", &mut buffer, tag.as_slice().into()).is_err() {
+            if cipher
+                .decrypt_in_place_detached(nonce.as_slice().into(), b"", &mut buffer, tag.as_slice().into())
+                .is_err()
+            {
                 continue;
             };
 
@@ -293,7 +301,8 @@ mod tests {
         #[test]
         fn deterministic() {
             assert_eq!(
-                EncryptedMessage::<String, TestConfigDeterministic>::encrypt("rigo does pretty codes".to_string()).unwrap(),
+                EncryptedMessage::<String, TestConfigDeterministic>::encrypt("rigo does pretty codes".to_string())
+                    .unwrap(),
                 EncryptedMessage {
                     payload: "48lwH3W0sEJjjC3z4S8qyNVpdf6jN0sF".to_string(),
                     headers: EncryptedMessageHeaders {
@@ -321,7 +330,10 @@ mod tests {
         fn test_serialization_error() {
             // A map with non-string keys can't be serialized into JSON.
             let map = std::collections::HashMap::<[u8; 2], String>::from([([1, 2], "Hi".to_string())]);
-            assert!(matches!(EncryptedMessage::<_, TestConfigDeterministic>::encrypt(map).unwrap_err(), EncryptionError::Serialization(_)));
+            assert!(matches!(
+                EncryptedMessage::<_, TestConfigDeterministic>::encrypt(map).unwrap_err(),
+                EncryptionError::Serialization(_)
+            ));
         }
     }
 
@@ -344,17 +356,26 @@ mod tests {
             // Test invalid payload.
             let mut message = generate();
             message.payload = "invalid".to_string();
-            assert!(matches!(message.decrypt().unwrap_err(), DecryptionError::Base64Decoding(_)));
+            assert!(matches!(
+                message.decrypt().unwrap_err(),
+                DecryptionError::Base64Decoding(_)
+            ));
 
             // Test invalid nonce.
             let mut message = generate();
             message.headers.nonce = "invalid".to_string();
-            assert!(matches!(message.decrypt().unwrap_err(), DecryptionError::Base64Decoding(_)));
+            assert!(matches!(
+                message.decrypt().unwrap_err(),
+                DecryptionError::Base64Decoding(_)
+            ));
 
             // Test invalid tag.
             let mut message = generate();
             message.headers.tag = "invalid".to_string();
-            assert!(matches!(message.decrypt().unwrap_err(), DecryptionError::Base64Decoding(_)));
+            assert!(matches!(
+                message.decrypt().unwrap_err(),
+                DecryptionError::Base64Decoding(_)
+            ));
         }
 
         #[test]
@@ -385,7 +406,10 @@ mod tests {
                 config: message.config,
             };
 
-            assert!(matches!(message.decrypt().unwrap_err(), DecryptionError::Deserialization(_)));
+            assert!(matches!(
+                message.decrypt().unwrap_err(),
+                DecryptionError::Deserialization(_)
+            ));
         }
     }
 
@@ -427,7 +451,9 @@ mod tests {
         let encrypted = EncryptedMessage::<Option<String>, TestConfigRandomized>::encrypt(None).unwrap();
         assert_eq!(encrypted.decrypt().unwrap(), None);
 
-        let encrypted = EncryptedMessage::<Option<String>, TestConfigRandomized>::encrypt(Some("rigo is cool".to_string())).unwrap();
+        let encrypted = {
+            EncryptedMessage::<Option<String>, TestConfigRandomized>::encrypt(Some("rigo is cool".to_string())).unwrap()
+        };
         assert_eq!(encrypted.decrypt().unwrap(), Some("rigo is cool".to_string()));
 
         // Boolean values
@@ -451,8 +477,16 @@ mod tests {
         assert_eq!(encrypted.decrypt().unwrap(), vec![1, 2, 3]);
 
         // Object values
-        let encrypted = EncryptedMessage::<serde_json::Value, TestConfigRandomized>::encrypt(json!({ "a": 1, "b": "hello", "c": false })).unwrap();
-        assert_eq!(encrypted.decrypt().unwrap(), json!({ "a": 1, "b": "hello", "c": false }));
+        let encrypted = {
+            EncryptedMessage::<serde_json::Value, TestConfigRandomized>::encrypt(
+                json!({ "a": 1, "b": "hello", "c": false }),
+            )
+            .unwrap()
+        };
+        assert_eq!(
+            encrypted.decrypt().unwrap(),
+            json!({ "a": 1, "b": "hello", "c": false })
+        );
     }
 
     #[test]

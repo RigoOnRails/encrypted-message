@@ -4,9 +4,9 @@ mod schema;
 
 use diesel::prelude::*;
 use encrypted_message::{
-    EncryptedMessage,
-    strategy::Randomized,
     config::{Config, Secret},
+    strategy::Randomized,
+    EncryptedMessage,
 };
 
 #[derive(Debug, Default)]

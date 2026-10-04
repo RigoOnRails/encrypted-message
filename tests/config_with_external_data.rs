@@ -1,7 +1,7 @@
 use encrypted_message::{
-    EncryptedMessage,
+    config::{Config, ExposeSecret, Secret},
     strategy::Randomized,
-    config::{Config, Secret, ExposeSecret},
+    EncryptedMessage,
 };
 use pbkdf2::pbkdf2_hmac_array;
 use sha2::Sha256;

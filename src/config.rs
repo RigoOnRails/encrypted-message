@@ -2,7 +2,7 @@
 
 use std::fmt::Debug;
 
-pub use secrecy::{Secret, ExposeSecret};
+pub use secrecy::{ExposeSecret, Secret};
 
 use crate::error::ConfigError;
 
@@ -34,6 +34,10 @@ mod tests {
     #[test]
     fn primary_key_returns_first_key() {
         let config = TestConfig;
-        assert_eq!(config.primary_key().unwrap().expose_secret(), config.keys()[0].expose_secret());
+
+        assert_eq!(
+            config.primary_key().unwrap().expose_secret(),
+            config.keys()[0].expose_secret()
+        );
     }
 }
