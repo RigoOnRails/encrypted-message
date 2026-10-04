@@ -9,6 +9,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check formatting
+        run: cargo fmt --all --check
+
       - uses: swatinem/rust-cache@v2
 
       - name: Run Clippy
