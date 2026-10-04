@@ -1,9 +1,9 @@
 //! This example demonstrates how to use `encrypted-message` to encrypt & decrypt a payload.
 
 use encrypted_message::{
-    EncryptedMessage,
+    config::{Config, ExposeSecret, Secret},
     strategy::Randomized,
-    config::{Config, Secret, ExposeSecret},
+    EncryptedMessage,
 };
 
 /// NOTE: Never hardcode your keys like this, obviously.
@@ -13,8 +13,12 @@ impl Config for EncryptionConfig {
     type Strategy = Randomized;
 
     fn keys(&self) -> Vec<Secret<[u8; 32]>> {
-        let encoded_keys = [Secret::new("75754f7866705767526749456f33644972646f30686e484a484631686e747657".to_string())];
-        encoded_keys.iter()
+        let encoded_keys = [Secret::new(
+            "75754f7866705767526749456f33644972646f30686e484a484631686e747657".to_string(),
+        )];
+
+        encoded_keys
+            .iter()
             .map(|hex_key| {
                 let mut key = [0; 32];
                 hex::decode_to_slice(hex_key.expose_secret(), &mut key).unwrap();

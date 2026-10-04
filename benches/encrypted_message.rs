@@ -1,8 +1,8 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use encrypted_message::{
-    EncryptedMessage,
-    strategy::{Deterministic, Randomized},
     config::{Config, Secret},
+    strategy::{Deterministic, Randomized},
+    EncryptedMessage,
 };
 use rand::distributions::{Alphanumeric, DistString};
 
@@ -30,13 +30,13 @@ fn encrypted_message(c: &mut Criterion) {
     // 32-byte payload.
     let payload = black_box(Alphanumeric.sample_string(&mut rand::thread_rng(), 32));
 
-    c.bench_function("Encrypt 32-byte payload (Deterministic)", |b| b.iter(|| {
-        EncryptedMessage::<_, ConfigDeterministic>::encrypt(payload.clone()).unwrap()
-    }));
+    c.bench_function("Encrypt 32-byte payload (Deterministic)", |b| {
+        b.iter(|| EncryptedMessage::<_, ConfigDeterministic>::encrypt(payload.clone()).unwrap())
+    });
 
-    c.bench_function("Encrypt 32-byte payload (Randomized)", |b| b.iter(|| {
-        EncryptedMessage::<_, ConfigRandomized>::encrypt(payload.clone()).unwrap()
-    }));
+    c.bench_function("Encrypt 32-byte payload (Randomized)", |b| {
+        b.iter(|| EncryptedMessage::<_, ConfigRandomized>::encrypt(payload.clone()).unwrap())
+    });
 
     c.bench_function("Decrypt 32-byte payload", |b| {
         let encrypted = EncryptedMessage::<_, ConfigRandomized>::encrypt(payload.clone()).unwrap();

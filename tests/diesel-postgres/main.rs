@@ -4,9 +4,9 @@ mod schema;
 
 use diesel::prelude::*;
 use encrypted_message::{
-    EncryptedMessage,
-    strategy::Randomized,
     config::{Config, Secret},
+    strategy::Randomized,
+    EncryptedMessage,
 };
 
 #[derive(Debug, Default)]
@@ -64,5 +64,8 @@ fn encrypted_message_works() {
 
     // Decrypt the user's secrets.
     assert_eq!(user.json.as_ref().unwrap().decrypt().unwrap(), "Very secret.");
-    assert_eq!(user.jsonb.as_ref().unwrap().decrypt().unwrap(), "Very secret, also binary.");
+    assert_eq!(
+        user.jsonb.as_ref().unwrap().decrypt().unwrap(),
+        "Very secret, also binary."
+    );
 }

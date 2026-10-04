@@ -1,4 +1,7 @@
-use crate::{config::{Config, Secret}, strategy::{Deterministic, Randomized}};
+use crate::{
+    config::{Config, Secret},
+    strategy::{Deterministic, Randomized},
+};
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct TestConfigDeterministic;
