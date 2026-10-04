@@ -1,7 +1,8 @@
 name: Benchmark
 on:
   push:
-    branches: main
+    branches:
+      - main
 jobs:
   benchmark:
     runs-on: ubuntu-latest
