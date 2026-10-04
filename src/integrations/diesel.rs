@@ -1,14 +1,9 @@
 use std::fmt::Debug;
 
-use diesel::{
-    deserialize::FromSql,
-    serialize::ToSql,
-    backend::Backend,
-    sql_types,
-};
-use serde::{Serialize, de::DeserializeOwned};
+use diesel::{backend::Backend, deserialize::FromSql, serialize::ToSql, sql_types};
+use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{EncryptedMessage, config::Config};
+use crate::{config::Config, EncryptedMessage};
 
 macro_rules! impl_from_and_to_sql {
     ($($sql_type:ty, $backend:ty),+ $(,)?) => {
@@ -36,7 +31,4 @@ macro_rules! impl_from_and_to_sql {
 impl_from_and_to_sql!(sql_types::Json, diesel::mysql::Mysql);
 
 #[cfg(feature = "diesel-postgres")]
-impl_from_and_to_sql!(
-    sql_types::Json, diesel::pg::Pg,
-    sql_types::Jsonb, diesel::pg::Pg,
-);
+impl_from_and_to_sql!(sql_types::Json, diesel::pg::Pg, sql_types::Jsonb, diesel::pg::Pg);

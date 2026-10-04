@@ -33,9 +33,9 @@ impl Strategy for Deterministic {
         mac.update(payload);
 
         let digest = mac.finalize().into_bytes();
-        let nonce = digest[0..24].try_into().unwrap_or_else(|_| {
-            unreachable!("HMAC-SHA256 digests are 32 bytes long.")
-        });
+        let nonce = digest[0..24]
+            .try_into()
+            .unwrap_or_else(|_| unreachable!("HMAC-SHA256 digests are 32 bytes long."));
 
         Ok(nonce)
     }
